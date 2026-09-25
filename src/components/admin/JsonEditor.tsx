@@ -1,6 +1,6 @@
 import { Btn, ImageField, Label, TextArea, TextInput } from "./ui";
 
-const IMAGEN_RE = /(imagen|portada|foto|banner|logo|icon|thumb|src|mapa)/i;
+const IMAGEN_RE = /(imagen|portada|foto|banner|logo|icon|thumb|src|mapa|desktop|mobile)/i;
 const LARGO_RE = /(texto|descripcion|parrafo|resumen|nota|contenido|bio|intro|cuerpo|desc)/i;
 
 const etiqueta = (k: string) =>

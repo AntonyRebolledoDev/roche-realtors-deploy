@@ -569,7 +569,7 @@ export const LEGALES: PaginaLegal[] = [
       "Roche Realtors Yucatán pone a disposición de sus clientes los siguientes canales para la recepción y atención de solicitudes, quejas o reclamaciones relacionadas con los servicios y la atención brindada:",
     secciones: [
       {
-        titulo: "Datos de contacto",
+        titulo: "Atención y contacto",
         lista: [
           "Horario de atención: lunes a viernes, de 9:00 a.m. a 6:00 p.m.",
           "Domicilio: Calle 23 No. 216, entre 18 y 22, Col. Monterreal, C.P. 97130, Mérida, Yucatán, México.",

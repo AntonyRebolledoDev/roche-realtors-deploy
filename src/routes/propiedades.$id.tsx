@@ -10,7 +10,7 @@ import {
 } from "@/components/wireframe/primitives";
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { PROPIEDADES_DEMO, amenidadesCompletas, type Propiedad } from "@/content/fichas";
-
+import { usePropiedad } from "@/lib/catalogos";
 export const Route = createFileRoute("/propiedades/$id")({
   head: () => ({
     meta: [
@@ -71,9 +71,13 @@ function Bloque({
 
 function Ficha() {
   const { id } = Route.useParams();
+  const fila = usePropiedad(id);
   const desdeUrl = VARIANTES.find((v) => id.startsWith(v.key))?.key ?? "casa";
   const [variante, setVariante] = useState(desdeUrl);
-  const p: Propiedad = PROPIEDADES_DEMO[variante] ?? PROPIEDADES_DEMO["casa"]!;
+  const demo: Propiedad = PROPIEDADES_DEMO[variante] ?? PROPIEDADES_DEMO["casa"]!;
+  const p: Propiedad = fila
+    ? ({ ...demo, ...(fila.data as Partial<Propiedad>), nombre: fila.nombre } as Propiedad)
+    : demo;
   const amenidades = amenidadesCompletas(p);
   const principal = p.galeria[0];
   const minis = p.galeria.slice(1, 5);
@@ -86,24 +90,25 @@ function Ficha() {
       </div>
 
       {/* Selector de variante (solo para revisión de plantilla) */}
-      <div className="mx-auto max-w-7xl px-5 md:px-8 mt-5">
-        <div className="flex flex-wrap gap-2">
-          {VARIANTES.map((v) => (
-            <button
-              key={v.key}
-              onClick={() => setVariante(v.key)}
-              className={`rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.18em] transition-colors ${
-                variante === v.key
-                  ? "border-transparent bg-ink text-foreground"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {v.label}
-            </button>
-          ))}
+      {!fila && (
+        <div className="mx-auto max-w-7xl px-5 md:px-8 mt-5">
+          <div className="flex flex-wrap gap-2">
+            {VARIANTES.map((v) => (
+              <button
+                key={v.key}
+                onClick={() => setVariante(v.key)}
+                className={`rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.18em] transition-colors ${
+                  variante === v.key
+                    ? "border-transparent bg-ink text-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-
+      )}
       {/* Galería */}
       <section className="mx-auto max-w-7xl px-5 md:px-8 mt-6">
         <div className="grid md:grid-cols-3 gap-3">

@@ -62,9 +62,9 @@ export function BtnPH({
   };
   const variants = {
     solid:
-      "bg-primary text-primary-foreground hover:bg-ink hover:shadow-[0_16px_40px_-16px_oklch(0_0_0/0.5)] hover:-translate-y-0.5",
+      "bg-primary text-primary-foreground hover:brightness-110 hover:shadow-[0_16px_40px_-16px_oklch(0_0_0/0.5)] hover:-translate-y-0.5",
     outline:
-      "border border-border bg-transparent text-foreground hover:border-gold hover:text-foreground hover:-translate-y-0.5",
+      "border border-border bg-transparent text-foreground hover:border-gold hover:bg-gold/10 hover:text-gold hover:-translate-y-0.5",
     ghost: "bg-transparent text-foreground hover:text-gold",
   };
   return (
@@ -218,15 +218,33 @@ export function PropertyCard({
   title = "Nombre de la propiedad",
   tipo = "Casa",
   operacion = "Venta",
+  imagen,
+  zona = "Zona / Colonia",
+  detalle = "3 rec · 2 baños · 200 m²",
+  precio = "$00,000,000 MXN",
 }: {
   title?: string;
   tipo?: string;
-  operacion?: "Preventa" | "Venta" | "Renta";
+   operacion?: string;
+  imagen?: string;
+  zona?: string;
+  detalle?: string;
+  precio?: string;
 }) {
   return (
     <div className="group rounded-3xl bg-card overflow-hidden hover-lift border border-border transition-colors hover:border-gold-soft/50">
       <div className="relative media-zoom">
-        <ImagePH label="IMAGEN" aspect="16 / 9" />
+        {imagen ? (
+          <img
+            src={imagen}
+            alt={title}
+            loading="lazy"
+            className="w-full object-cover"
+            style={{ aspectRatio: "16 / 9" }}
+          />
+        ) : (
+          <ImagePH label="IMAGEN" aspect="16 / 9" />
+        )}
         <span className="absolute top-4 left-4 rounded-full border border-gold-soft/50 bg-background/80 backdrop-blur-md text-[11px] px-3 py-1 text-gold-soft">
           {operacion}
         </span>
@@ -237,9 +255,9 @@ export function PropertyCard({
       <div className="p-6 space-y-2.5">
         <div className="text-lg font-semibold text-foreground tracking-tight">{title}</div>
         <div className="text-[11px] uppercase tracking-[0.22em] text-gold-soft">{tipo}</div>
-        <div className="text-sm text-muted-foreground">Zona / Colonia</div>
-        <div className="text-[11px] text-muted-foreground">3 rec · 2 baños · 200 m²</div>
-        <div className="text-xl font-semibold pt-1 tracking-tight">$00,000,000 MXN</div>
+        <div className="text-sm text-muted-foreground">{zona}</div>
+        <div className="text-[11px] text-muted-foreground">{detalle}</div>
+        <div className="text-xl font-semibold pt-1 tracking-tight">{precio}</div>
         <div className="pt-2">
           <BtnPH label="Ver propiedad" variant="outline" size="sm" />
         </div>

@@ -447,7 +447,7 @@ export const CONTENT_DEFAULTS = {
       textoBoton: "Enviar mensaje",
       nota: "* Los mensajes se envían al equipo de ventas. Configurado para evitar spam.",
     },
-    datosTitulo: "Datos de contacto",
+    datosTitulo: "Atención y contacto",
     datos: CONTACTO,
     redesTitulo: "Síguenos",
     redes: {
@@ -455,6 +455,8 @@ export const CONTENT_DEFAULTS = {
       instagram: "https://www.instagram.com/",
       facebook: "https://www.facebook.com/",
       youtube: "https://www.youtube.com/",
+      linkedin: "",
+      youtubeTermometro: "",
     },
     faq: {
       titulo: "Preguntas frecuentes",
@@ -533,7 +535,10 @@ export function useSiteContent<K extends ContentKey>(key: K): (typeof CONTENT_DE
   const { data } = useQuery({
     queryKey: ["site_content", key],
     queryFn: () => fetchContent(key),
-    staleTime: 30_000,
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
   });
   return mergeContent(CONTENT_DEFAULTS[key], data);
 }

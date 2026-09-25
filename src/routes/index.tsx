@@ -14,6 +14,9 @@ import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { NewsletterModal } from "@/components/wireframe/NewsletterModal";
 import { NewsletterForm } from "@/components/wireframe/NewsletterForm";
 import { useSiteContent } from "@/lib/site-content";
+import { usePropiedades, useArticulosRecientes } from "@/lib/catalogos";
+import { fichaDeFila } from "@/lib/propiedad-card";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,9 +32,15 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const c = useSiteContent("inicio");
+  const cEmpresa = useSiteContent("empresa");
   const heroImages = c.hero.imagenes;
   const [slide, setSlide] = useState(0);
-
+  const propiedades = usePropiedades();
+  const destacadas = propiedades
+    .filter((p) => p.destacada)
+    .slice(0, 4)
+    .map(fichaDeFila);
+  const articulosRecientes = useArticulosRecientes(3);
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % heroImages.length), 6000);
     return () => clearInterval(t);
@@ -60,34 +69,32 @@ function Home() {
         <div className="absolute inset-0 bg-linear-to-t from-ink/80 via-transparent to-ink/40" />
 
         <div className="relative mx-auto max-w-7xl w-full px-5 md:px-8 py-24">
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div className="max-w-3xl animate-float-up">
-              <h1 className="hero-title">{c.hero.titulo}</h1>
-              <div className="mt-7 h-px w-24 bg-gold-soft" />
-              <p className="mt-6 text-[11px] md:text-xs uppercase tracking-[0.28em] text-gold-soft">
-                {c.hero.lema.split("·").map((parte, i, arr) => (
-                  <span key={parte}>
-                    {parte.trim()}
-                    {i < arr.length - 1 && <span className="text-gold"> · </span>}
-                  </span>
-                ))}
-              </p>
-              <div className="mt-10 flex flex-wrap gap-4">
-                <Link to="/propiedades">
-                  <span className="btn-ghost-gold">
-                    {c.hero.botonPropiedades} <span aria-hidden>→</span>
-                  </span>
-                </Link>
-                <Link to="/contacto">
-                  <span className="btn-ghost-gold">
-                    {c.hero.botonCita} <span aria-hidden>→</span>
-                  </span>
-                </Link>
-              </div>
+          <div className="max-w-2xl animate-float-up">
+            <h1 className="hero-title">{c.hero.titulo}</h1>
+            <div className="mt-7 h-px w-24 bg-gold-soft" />
+            <p className="mt-6 text-[11px] md:text-xs uppercase tracking-[0.28em] text-gold-soft">
+              {c.hero.lema.split("·").map((parte, i, arr) => (
+                <span key={parte}>
+                  {parte.trim()}
+                  {i < arr.length - 1 && <span className="text-gold"> · </span>}
+                </span>
+              ))}
+            </p>
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Link to="/propiedades">
+                <span className="btn-ghost-gold">
+                  {c.hero.botonPropiedades} <span aria-hidden>→</span>
+                </span>
+              </Link>
+              <Link to="/contacto">
+                <span className="btn-ghost-gold">
+                  {c.hero.botonCita} <span aria-hidden>→</span>
+                </span>
+              </Link>
             </div>
 
-            {/* Bloque newsletter */}
-            <div className="w-full lg:w-[26rem] rounded-[6px] border border-gold-soft/40 bg-ink/75 backdrop-blur-xl px-8 py-6">
+            {/* Bloque newsletter — debajo de los botones */}
+            <div className="mt-8 w-full max-w-sm rounded-[6px] border border-gold-soft/40 bg-ink/75 backdrop-blur-xl px-8 py-6">
               <div className="text-[10px] uppercase tracking-[0.28em] text-foreground">
                 {c.hero.newsletterTitulo}
               </div>
@@ -150,7 +157,7 @@ function Home() {
           </Reveal>
 
           <div>
-            <SectionHeader eyebrow={c.bienvenida.eyebrow} title={c.bienvenida.titulo} />
+            <SectionHeader title={c.bienvenida.titulo} />
             <Reveal delay={120}>
               <Prose resumen={c.bienvenida.resumen} parrafos={c.bienvenida.parrafos} />
               <div className="mt-8">
@@ -165,11 +172,27 @@ function Home() {
       <SectionBand bg="gray">
         <SectionHeader title={c.destacadas.titulo} intro={c.destacadas.intro} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Reveal key={i} delay={i * 90}>
-              <PropertyCard />
-            </Reveal>
-          ))}
+          {destacadas.length > 0
+            ? destacadas.map((f, i) => (
+                <Reveal key={f.slug} delay={i * 90}>
+                  <Link to="/propiedades/$id" params={{ id: f.slug }} className="contents">
+                    <PropertyCard
+                      title={f.nombre}
+                      tipo={f.tipo}
+                      operacion={f.operacion}
+                      imagen={f.imagen}
+                      zona={f.zona}
+                      detalle={f.detalle}
+                      precio={f.precio}
+                    />
+                  </Link>
+                </Reveal>
+              ))
+              : Array.from({ length: 4 }).map((_, i) => (
+                <Reveal key={i} delay={i * 90}>
+                  <PropertyCard />
+                </Reveal>
+              ))}
         </div>
         <div className="mt-12 text-center">
           <Link to="/propiedades"><BtnPH label={c.destacadas.textoBoton} /></Link>
@@ -244,7 +267,26 @@ function Home() {
         </div>
       </SectionBand>
 
-      {/* 7. SERVICIOS */}
+      {/* 7. TESTIMONIOS */}
+      <SectionBand bg="gray">
+        <SectionHeader title={cEmpresa.testimoniosTitulo} center />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {cEmpresa.testimonios.map((t, i) => (
+            <Reveal key={i} delay={i * 90}>
+              <figure className="rounded-3xl border border-border bg-card p-6 space-y-4 hover-lift">
+                <div className="text-2xl text-muted-foreground">"</div>
+                <blockquote className="text-sm leading-7 text-foreground">{t.texto}</blockquote>
+                <figcaption className="pt-2 border-t border-border text-xs text-foreground">
+                  <div className="font-semibold">{t.autor}</div>
+                  <div className="text-muted-foreground">{t.lugar}</div>
+                </figcaption>
+              </figure>
+            </Reveal>
+          ))}
+        </div>
+      </SectionBand>
+
+      {/* 8. SERVICIOS */}
       <SectionBand>
         <SectionHeader title={c.serviciosTitulo} center />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -262,22 +304,59 @@ function Home() {
         </div>
       </SectionBand>
 
-      {/* 8. RECURSOS */}
+      {/* 9. RECURSOS */}
       <SectionBand bg="gray">
         <SectionHeader title={c.recursos.titulo} />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Reveal key={i} delay={i * 90}>
-              <ResourceCard />
-            </Reveal>
-          ))}
+          {articulosRecientes.length > 0
+            ? articulosRecientes.map((a, i) => (
+                <Reveal key={a.slug} delay={i * 90}>
+                  <Link
+                    to="/recursos/$slug"
+                    params={{ slug: a.slug }}
+                    className="group rounded-3xl bg-card overflow-hidden hover-lift border border-border flex flex-col"
+                  >
+                    <div className="relative media-zoom">
+                      {a.imagen ? (
+                        <img
+                          src={a.imagen}
+                          alt={a.titulo}
+                          loading="lazy"
+                          className="w-full object-cover"
+                          style={{ aspectRatio: "16 / 9" }}
+                        />
+                      ) : (
+                        <ImagePH label="IMAGEN" aspect="16 / 9" />
+                      )}
+                    </div>
+                    <div className="p-6 space-y-3 flex-1 flex flex-col">
+                      <span className="card-label">{a.categoria}</span>
+                      <div className="text-lg font-semibold text-foreground tracking-tight line-clamp-2">
+                        {a.titulo}
+                      </div>
+                      <p className="text-sm leading-relaxed text-muted-foreground flex-1 line-clamp-3">
+                        {a.entradilla}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+                        <span>{a.fecha ?? ""}</span>
+                        <span className="transition-colors group-hover:text-gold">Leer más →</span>
+                      </div>
+                    </div>
+                  </Link>
+                </Reveal>
+              ))
+            : Array.from({ length: 3 }).map((_, i) => (
+                <Reveal key={i} delay={i * 90}>
+                  <ResourceCard />
+                </Reveal>
+              ))}
         </div>
         <div className="mt-12 text-center">
           <Link to="/recursos"><BtnPH label={c.recursos.textoBoton} /></Link>
         </div>
       </SectionBand>
 
-      {/* 9. AGENDA UNA CITA */}
+      {/* 10. AGENDA UNA CITA */}
       <AgendaCita />
     </>
   );

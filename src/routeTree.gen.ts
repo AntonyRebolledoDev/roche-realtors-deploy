@@ -28,6 +28,7 @@ import { Route as DesarrollosIdRouteImport } from './routes/desarrollos.$id'
 import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
 import { Route as PropiedadesIndexRouteImport } from './routes/propiedades.index'
 import { Route as PropiedadesIdRouteImport } from './routes/propiedades.$id'
+import { Route as RecursosIndexRouteImport } from './routes/recursos.index'
 import { Route as RecursosSlugRouteImport } from './routes/recursos.$slug'
 import { Route as AdminContenidoModuloRouteImport } from './routes/admin.contenido.$modulo'
 
@@ -126,6 +127,11 @@ const PropiedadesIdRoute = PropiedadesIdRouteImport.update({
   path: '/propiedades/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecursosIndexRoute = RecursosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => RecursosRoute,
+} as any)
 const RecursosSlugRoute = RecursosSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/desarrollos/': typeof DesarrollosIndexRoute
   '/propiedades/': typeof PropiedadesIndexRoute
+  '/recursos/': typeof RecursosIndexRoute
   '/admin/contenido/$modulo': typeof AdminContenidoModuloRoute
 }
 export interface FileRoutesByTo {
@@ -166,7 +173,6 @@ export interface FileRoutesByTo {
   '/empresa': typeof EmpresaRoute
   '/inteligencia-de-mercado': typeof InteligenciaDeMercadoRoute
   '/por-que-yucatan': typeof PorQueYucatanRoute
-  '/recursos': typeof RecursosRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/admin/desarrollos': typeof AdminDesarrollosRoute
   '/admin/newsletter': typeof AdminNewsletterRoute
@@ -180,6 +186,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/desarrollos': typeof DesarrollosIndexRoute
   '/propiedades': typeof PropiedadesIndexRoute
+  '/recursos': typeof RecursosIndexRoute
   '/admin/contenido/$modulo': typeof AdminContenidoModuloRoute
 }
 export interface FileRoutesById {
@@ -204,6 +211,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/desarrollos/': typeof DesarrollosIndexRoute
   '/propiedades/': typeof PropiedadesIndexRoute
+  '/recursos/': typeof RecursosIndexRoute
   '/admin/contenido/$modulo': typeof AdminContenidoModuloRoute
 }
 export interface FileRouteTypes {
@@ -229,6 +237,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/desarrollos/'
     | '/propiedades/'
+    | '/recursos/'
     | '/admin/contenido/$modulo'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -237,7 +246,6 @@ export interface FileRouteTypes {
     | '/empresa'
     | '/inteligencia-de-mercado'
     | '/por-que-yucatan'
-    | '/recursos'
     | '/reset-password'
     | '/admin/desarrollos'
     | '/admin/newsletter'
@@ -251,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/desarrollos'
     | '/propiedades'
+    | '/recursos'
     | '/admin/contenido/$modulo'
   id:
     | '__root__'
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/desarrollos/'
     | '/propiedades/'
+    | '/recursos/'
     | '/admin/contenido/$modulo'
   fileRoutesById: FileRoutesById
 }
@@ -428,6 +438,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropiedadesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recursos/': {
+      id: '/recursos/'
+      path: '/'
+      fullPath: '/recursos/'
+      preLoaderRoute: typeof RecursosIndexRouteImport
+      parentRoute: typeof RecursosRoute
+    }
     '/recursos/$slug': {
       id: '/recursos/$slug'
       path: '/$slug'
@@ -469,10 +486,12 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface RecursosRouteChildren {
   RecursosSlugRoute: typeof RecursosSlugRoute
+  RecursosIndexRoute: typeof RecursosIndexRoute
 }
 
 const RecursosRouteChildren: RecursosRouteChildren = {
   RecursosSlugRoute: RecursosSlugRoute,
+  RecursosIndexRoute: RecursosIndexRoute,
 }
 
 const RecursosRouteWithChildren = RecursosRoute._addFileChildren(

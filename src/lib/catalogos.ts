@@ -76,9 +76,35 @@ export function useArticulos(): (Articulo & { fecha?: string })[] {
       if (error) throw error;
       return (data ?? []) as unknown as FilaArticulo[];
     },
-    staleTime: 30_000,
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
   });
   if (!data || data.length === 0) return ARTICULOS;
+  return data.map(aArticulo);
+}
+
+export function useArticulosRecientes(limit = 3): (Articulo & { fecha?: string })[] {
+  const { data } = useQuery({
+    queryKey: ["pub", "articulos-recientes", limit],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("articulos")
+        .select("slug,titulo,categoria,fecha,data")
+        .eq("estado", "publicado")
+        .eq("archivado", false)
+        .order("fecha", { ascending: false, nullsFirst: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []) as unknown as FilaArticulo[];
+    },
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
+  });
+  if (!data || data.length === 0) return ARTICULOS.slice(0, limit);
   return data.map(aArticulo);
 }
 
@@ -94,7 +120,10 @@ export function useVideos(): VideoTermometro[] {
       if (error) throw error;
       return data ?? [];
     },
-    staleTime: 30_000,
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
   });
   if (!data || data.length === 0) return VIDEOS_TERMOMETRO;
   return data.map((v) => ({
@@ -118,7 +147,10 @@ export function useEstiloVida(): RecursoEstiloVida[] {
       if (error) throw error;
       return data ?? [];
     },
-    staleTime: 30_000,
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
   });
   if (!data || data.length === 0) return ESTILO_DE_VIDA;
   return data.map((r) => ({
@@ -153,10 +185,35 @@ export function usePropiedades(categoria?: string): FilaPropiedad[] {
       if (error) throw error;
       return (data ?? []) as unknown as FilaPropiedad[];
     },
-    staleTime: 30_000,
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
   });
   const filas = data ?? [];
   return categoria ? filas.filter((p) => p.categoria === categoria) : filas;
+}
+
+export function usePropiedad(slug: string): FilaPropiedad | null {
+  const { data } = useQuery({
+    queryKey: ["pub", "propiedad", slug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("propiedades")
+        .select("id,slug,nombre,categoria,destacada,data")
+        .eq("slug", slug)
+        .eq("estado", "publicada")
+        .eq("archivada", false)
+        .maybeSingle();
+      if (error) throw error;
+      return (data ?? null) as unknown as FilaPropiedad | null;
+    },
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
+  });
+  return data ?? null;
 }
 
 export type FilaDesarrollo = {
@@ -180,7 +237,10 @@ export function useDesarrollos(): FilaDesarrollo[] {
       if (error) throw error;
       return (data ?? []) as unknown as FilaDesarrollo[];
     },
-    staleTime: 30_000,
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
   });
   return data ?? [];
 }

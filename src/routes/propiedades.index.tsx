@@ -14,7 +14,8 @@ import {
   Tab,
 } from "@/components/wireframe/primitives";
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
-
+import { usePropiedades } from "@/lib/catalogos";
+import { fichaDeFila } from "@/lib/propiedad-card";
 export const Route = createFileRoute("/propiedades/")({
   head: () => ({
     meta: [
@@ -42,6 +43,10 @@ function Propiedades() {
   const categorias = c.categorias;
   const [active, setActive] = useState<string | null>(null);
   const [subActive, setSubActive] = useState<"Residenciales" | "Macrolotes">("Residenciales");
+
+  const catActiva =
+    SLUG_CAT[active === "Terrenos" ? subActive : (active ?? "")] ?? "casa";
+  const fichas = usePropiedades(catActiva).map(fichaDeFila);
 
   return (
     <>
@@ -110,16 +115,35 @@ function Propiedades() {
         <SectionBand>
           <SectionHeader title={active === "Terrenos" ? `Terrenos · ${subActive}` : active} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Link
-                key={i}
-                to="/propiedades/$id"
-                params={{ id: `${SLUG_CAT[active === "Terrenos" ? subActive : active] ?? "casa"}-${i + 1}` }}
-                className="contents"
-              >
-                <PropertyCard />
-              </Link>
-            ))}
+            {fichas.length > 0
+              ? fichas.map((f) => (
+                  <Link
+                    key={f.slug}
+                    to="/propiedades/$id"
+                    params={{ id: f.slug }}
+                    className="contents"
+                  >
+                    <PropertyCard
+                      title={f.nombre}
+                      tipo={f.tipo}
+                      operacion={f.operacion}
+                      imagen={f.imagen}
+                      zona={f.zona}
+                      detalle={f.detalle}
+                      precio={f.precio}
+                    />
+                  </Link>
+                ))
+                : Array.from({ length: 6 }).map((_, i) => (
+                  <Link
+                    key={i}
+                    to="/propiedades/$id"
+                    params={{ id: `${catActiva}-${i + 1}` }}
+                    className="contents"
+                  >
+                    <PropertyCard />
+                  </Link>
+                ))}
           </div>
           <div className="mt-8 text-center">
             <BtnPH label="Ver más" variant="outline" />
