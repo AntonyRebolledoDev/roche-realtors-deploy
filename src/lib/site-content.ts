@@ -496,7 +496,8 @@ type AnyRecord = Record<string, unknown>;
  * del entorno de Lovable. Esas URLs deben ignorarse y usar el asset local por defecto.
  */
 function isLegacyLovableAssetUrl(value: unknown): value is string {
-  return typeof value === "string" && value.includes("/__l5e/assets-v1/");
+  if (typeof value !== "string") return false;
+  return value.includes("/__l5e/assets-v1/") || value.startsWith("/src/assets/");
 }
 
 /** Mezcla superficial y profunda: lo guardado en el panel gana sobre el valor base. */

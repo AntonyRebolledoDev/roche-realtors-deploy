@@ -32,6 +32,14 @@ const CATEGORIA_PUBLICA: Record<string, string> = {
   ley: "Ley y normatividad",
 };
 
+/** Devuelve undefined para URLs que solo existen en dev o en el CDN legacy de Lovable. */
+function sanitizeImg(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.includes("/__l5e/assets-v1/")) return undefined;
+  if (url.startsWith("/src/assets/")) return undefined;
+  return url;
+}
+
 function textoABloques(texto?: string): Bloque[] {
   if (!texto) return [];
   return texto
@@ -56,7 +64,7 @@ function aArticulo(f: FilaArticulo): Articulo & { fecha?: string } {
     categoria: CATEGORIA_PUBLICA[f.categoria] ?? f.categoria,
     titulo: f.titulo,
     entradilla: String(d['entradilla'] ?? d['resumen'] ?? ""),
-    imagen: (d['imagen'] as string) || undefined,
+    imagen: sanitizeImg(d['imagen'] as string),
     bloques: (d['bloques'] as Bloque[]) ?? textoABloques(d['cuerpo'] as string),
     referencias: d['referencias'] as string[] | undefined,
     fecha: f.fecha ? fechaES(f.fecha) : "",
@@ -159,7 +167,7 @@ export function useEstiloVida(): RecursoEstiloVida[] {
     texto: r.texto ?? "",
     url: r.url,
     fuente: r.fuente ?? "",
-    imagen: r.imagen ?? "",
+    imagen: sanitizeImg(r.imagen) ?? "",
   }));
 }
 

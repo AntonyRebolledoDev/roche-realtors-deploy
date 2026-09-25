@@ -1,6 +1,13 @@
 import type { FilaPropiedad } from "@/lib/catalogos";
 import type { Propiedad } from "@/content/fichas";
 
+function sanitizeImg(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.includes("/__l5e/assets-v1/")) return undefined;
+  if (url.startsWith("/src/assets/")) return undefined;
+  return url;
+}
+
 export type FichaPropiedadCard = {
   slug: string;
   nombre: string;
@@ -31,7 +38,7 @@ export function fichaDeFila(f: FilaPropiedad): FichaPropiedadCard {
     nombre: d.nombre || f.nombre,
     tipo: d.tipoPropiedad || d.categoria || "",
     operacion: d.tipoOferta || "Venta",
-    imagen: d.galeria?.find((g) => g.src)?.src,
+    imagen: sanitizeImg(d.galeria?.find((g) => g.src)?.src),
     zona: d.desarrollo || d.zonaAbierta || "",
     detalle,
     precio: d.precio || "",
