@@ -38,7 +38,7 @@ export function fichaDeFila(f: FilaPropiedad): FichaPropiedadCard {
     nombre: d.nombre || f.nombre,
     tipo: d.tipoPropiedad || d.categoria || "",
     operacion: d.tipoOferta || "Venta",
-    imagen: sanitizeImg(d.galeria?.find((g) => g.src)?.src),
+    imagen: sanitizeImg((d as Record<string, unknown>).imagenPortada as string) ?? sanitizeImg(d.galeria?.find((g) => g.src)?.src),
     zona: d.desarrollo || d.zonaAbierta || "",
     detalle,
     precio: d.precio || "",

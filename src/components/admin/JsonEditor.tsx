@@ -1,7 +1,12 @@
 import { Btn, ImageField, Label, TextArea, TextInput } from "./ui";
 
-const IMAGEN_RE = /(imagen|portada|foto|banner|logo|icon|thumb|src|mapa|desktop|mobile)/i;
+const IMAGEN_RE = /(imagen|portada|foto|banner|logo|icon|thumb|src|desktop|mobile)/i;
+const MAPA_RE = /^mapa$/i;
 const LARGO_RE = /(texto|descripcion|parrafo|resumen|nota|contenido|bio|intro|cuerpo|desc)/i;
+
+const ARRAY_TEMPLATES: Record<string, Record<string, unknown>> = {
+  galeria: { src: "", alt: "" },
+};
 
 const etiqueta = (k: string) =>
   k
@@ -72,6 +77,21 @@ export function JsonEditor({
         </div>
       );
     }
+    if (MAPA_RE.test(key)) {
+      return (
+        <div>
+          <Label>Mapa (URL embed de Google Maps)</Label>
+          <TextInput
+            value={v}
+            placeholder="https://www.google.com/maps/embed?pb=…"
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <p className="mt-1 text-[11px] text-white/40">
+            En Google Maps → Compartir → Insertar mapa → copiar solo la URL del src del iframe
+          </p>
+        </div>
+      );
+    }
     const largo = LARGO_RE.test(key) || v.length > 90;
     return (
       <div>
@@ -87,10 +107,21 @@ export function JsonEditor({
 
   if (Array.isArray(value)) {
     const modelo = value[0];
+    const plantillaFija = nombre ? ARRAY_TEMPLATES[nombre] : undefined;
+    const plantilla: Record<string, unknown> | null =
+      plantillaFija ??
+      ((modelo && typeof modelo === "object" && !Array.isArray(modelo))
+        ? nuevoComo(modelo) as Record<string, unknown>
+        : null);
     return (
       <div className="space-y-3">
         {nombre && <Label>{etiqueta(nombre)}</Label>}
-        {value.map((item, i) => (
+        {value.map((item, i) => {
+          const itemCompleto =
+            plantilla && typeof item === "object" && item !== null && !Array.isArray(item)
+              ? { ...plantilla, ...(item as Record<string, unknown>) }
+              : item;
+          return (
           <div key={i} className="rounded-lg border border-white/10 bg-black/20 p-4">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-[0.2em] text-gold">#{i + 1}</span>
@@ -129,7 +160,7 @@ export function JsonEditor({
               </div>
             </div>
             <JsonEditor
-              value={item}
+              value={itemCompleto}
               nivel={nivel + 1}
               onChange={(v) => {
                 const next = [...value];
@@ -138,11 +169,12 @@ export function JsonEditor({
               }}
             />
           </div>
-        ))}
+          );
+        })}
         <Btn
           type="button"
           variant="soft"
-          onClick={() => onChange([...value, nuevoComo(modelo ?? "")])}
+          onClick={() => onChange([...value, plantillaFija ?? nuevoComo(modelo ?? "")])}
         >
           Añadir elemento
         </Btn>

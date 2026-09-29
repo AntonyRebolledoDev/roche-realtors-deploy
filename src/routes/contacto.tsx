@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Breadcrumb,
   BtnPH,
@@ -9,6 +10,8 @@ import {
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { SocialList } from "@/components/wireframe/SocialIcons";
 import { useSiteContent } from "@/lib/site-content";
+
+const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/contacto`;
 
 export const Route = createFileRoute("/contacto")({
   head: () => ({
@@ -25,6 +28,36 @@ export const Route = createFileRoute("/contacto")({
 function Contacto() {
   const c = useSiteContent("contacto");
   const f = c.formulario;
+
+  const [form, setForm] = useState({ nombre: "", email: "", telefono: "", asunto: "", mensaje: "" });
+  const [enviando, setEnviando] = useState(false);
+  const [exito, setExito] = useState(false);
+  const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
+
+  const enviar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEnviando(true);
+    setErrorEnvio(null);
+    try {
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const res = await fetch(EDGE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": anonKey,
+          "Authorization": `Bearer ${anonKey}`,
+        },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Error al enviar");
+      setExito(true);
+      setForm({ nombre: "", email: "", telefono: "", asunto: "", mensaje: "" });
+    } catch {
+      setErrorEnvio("No se pudo enviar el mensaje. Intente de nuevo o escríbanos directamente.");
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   return (
     <>
@@ -53,21 +86,34 @@ function Contacto() {
       {/* Formulario + datos */}
       <SectionBand bg="gray">
         <div className="grid md:grid-cols-2 gap-10">
-          <form className="border border-border bg-card p-6 space-y-4">
+          <form className="border border-border bg-card p-6 space-y-4" onSubmit={enviar}>
             <div className="text-sm font-semibold">{f.titulo}</div>
-            {f.campos.map((l) => (
-              <div key={l}>
-                <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{l}</label>
-                <input className="w-full border border-border px-3 py-2 text-sm" placeholder={l} />
-              </div>
-            ))}
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Nombre completo *</label>
+              <input required className="w-full border border-border bg-background px-3 py-2 text-sm" placeholder="Nombre completo"
+                value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Email *</label>
+              <input required type="email" className="w-full border border-border bg-background px-3 py-2 text-sm" placeholder="Email"
+                value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Teléfono *</label>
+              <input required className="w-full border border-border bg-background px-3 py-2 text-sm" placeholder="Teléfono"
+                value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+            </div>
+
             <div>
               <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
                 {f.etiquetaAsunto}
               </label>
-              <select className="w-full border border-border px-3 py-2 text-sm bg-card">
+              <select required className="w-full border border-border px-3 py-2 text-sm bg-card"
+                value={form.asunto} onChange={(e) => setForm({ ...form, asunto: e.target.value })}>
+                <option value="">Selecciona una opción</option>
                 {f.opciones.map((o) => (
-                  <option key={o}>{o}</option>
+                  <option key={o} value={o}>{o}</option>
                 ))}
               </select>
             </div>
@@ -75,9 +121,25 @@ function Contacto() {
               <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
                 {f.etiquetaMensaje}
               </label>
-              <textarea rows={5} className="w-full border border-border px-3 py-2 text-sm" placeholder={f.placeholderMensaje} />
+              <textarea required rows={5} className="w-full border border-border bg-background px-3 py-2 text-sm"
+                placeholder={f.placeholderMensaje}
+                value={form.mensaje} onChange={(e) => setForm({ ...form, mensaje: e.target.value })} />
             </div>
-            <BtnPH label={f.textoBoton} size="lg" />
+
+            {exito && (
+              <p className="text-sm text-green-400">✓ Mensaje enviado. Le responderemos a la brevedad.</p>
+            )}
+            {errorEnvio && (
+              <p className="text-sm text-red-400">{errorEnvio}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={enviando || exito}
+              className="inline-flex items-center gap-2 rounded-full bg-[#C6A35A] px-7 py-3 text-sm font-medium text-black transition hover:opacity-90 disabled:opacity-50"
+            >
+              {enviando ? "Enviando…" : exito ? "Enviado ✓" : `${f.textoBoton} →`}
+            </button>
             <div className="text-[10px] text-muted-foreground pt-1">{f.nota}</div>
           </form>
 

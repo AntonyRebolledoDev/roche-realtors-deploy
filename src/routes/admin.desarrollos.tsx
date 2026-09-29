@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { JsonEditor } from "@/components/admin/JsonEditor";
-import { AdminCard, Btn, Label, TextInput } from "@/components/admin/ui";
+import { AdminCard, Btn, Label, TextInput, ImageField } from "@/components/admin/ui";
 import { DESARROLLO_DEMO } from "@/content/fichas";
 
 export const Route = createFileRoute("/admin/desarrollos")({
@@ -137,6 +137,32 @@ function AdminDesarrollos() {
             />
             Mostrar como destacado (máximo {MAX_DESTACADOS})
           </label>
+        </AdminCard>
+
+        <AdminCard className="mt-6 space-y-2">
+          <Label>Imagen de portada</Label>
+          <ImageField
+            value={(edicion.data.imagen as string) ?? ""}
+            hint="1200×675 px (16:9)"
+            carpeta="desarrollos"
+            onChange={(url) =>
+              setEdicion({ ...edicion, data: { ...edicion.data, imagen: url || undefined } })
+            }
+          />
+        </AdminCard>
+
+        <AdminCard className="mt-6 space-y-2">
+          <Label>Mapa de ubicación (URL embed de Google Maps)</Label>
+          <TextInput
+            value={(edicion.data.mapa as string) ?? ""}
+            placeholder="https://www.google.com/maps/embed?pb=…"
+            onChange={(e) =>
+              setEdicion({ ...edicion, data: { ...edicion.data, mapa: e.target.value || undefined } })
+            }
+          />
+          <p className="text-[11px] text-white/40">
+            Google Maps → Compartir → Insertar mapa → copiar solo la URL del src del iframe
+          </p>
         </AdminCard>
 
         <div className="mt-6">

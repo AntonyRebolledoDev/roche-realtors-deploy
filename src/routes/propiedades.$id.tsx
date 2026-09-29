@@ -184,7 +184,6 @@ function Ficha() {
                 <Link to="/contacto">
                   <BtnPH label="Contactar un asesor" size="lg" />
                 </Link>
-                <BtnPH label="Compartir" variant="outline" size="sm" />
               </div>
             </aside>
           </Reveal>
@@ -274,7 +273,20 @@ function Ficha() {
         <SectionHeader eyebrow="Ubicación" title={p.desarrollo ?? p.zonaAbierta ?? "Mérida, Yucatán"} />
         <Reveal className="overflow-hidden rounded-3xl">
           {p.mapa ? (
-            <img src={p.mapa} alt="Mapa de ubicación" className="w-full object-cover" />
+            p.mapa.includes("google.com/maps") ? (
+              <iframe
+                src={p.mapa}
+                width="100%"
+                height={400}
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Mapa de ubicación"
+              />
+            ) : (
+              <img src={p.mapa} alt="Mapa de ubicación" className="w-full object-cover" />
+            )
           ) : (
             <ImagePH label="MAPA DE UBICACIÓN" height={400} />
           )}

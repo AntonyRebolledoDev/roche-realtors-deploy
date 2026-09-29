@@ -11,6 +11,13 @@ import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { useSiteContent } from "@/lib/site-content";
 import { useDesarrollos } from "@/lib/catalogos";
 
+function sanitizeImg(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.includes("/__l5e/assets-v1/")) return undefined;
+  if (url.startsWith("/src/assets/")) return undefined;
+  return url;
+}
+
 export const Route = createFileRoute("/desarrollos/")({
   head: () => ({
     meta: [
@@ -93,7 +100,7 @@ function Desarrollos() {
           zona: String(d.data?.['zona'] ?? ""),
           productos: String(d.data?.['productos'] ?? ""),
           detalle: String(d.data?.['detalle'] ?? ""),
-          imagen: (d.data?.['imagen'] as string) || undefined,
+          imagen: sanitizeImg(d.data?.['imagen'] as string),
         }))
       : PLACEHOLDERS;
 

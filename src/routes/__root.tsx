@@ -36,11 +36,14 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportLovableError(
+      error instanceof Error ? error : new Error(String(error)),
+      { boundary: "tanstack_root_error_component" },
+    );
   }, [error]);
 
   return (
@@ -87,8 +90,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Inicio — Roche Realtors" },
       { name: "twitter:description", content: "Inmobiliaria boutique en Yucatán. Asesoría e inteligencia de mercado." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/34c1212c-e530-4f44-9444-4f746de74653/id-preview-d3f195dd--b33dd282-9147-4ad9-ace4-c20187bff38c.lovable.app-1783538556840.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/34c1212c-e530-4f44-9444-4f746de74653/id-preview-d3f195dd--b33dd282-9147-4ad9-ace4-c20187bff38c.lovable.app-1783538556840.png" },
+      { property: "og:image", content: "https://jjvoovmrnzszubkiqxab.supabase.co/storage/v1/object/public/media/IMAGEN%20WEB.jpg" },
+      { name: "twitter:image", content: "https://jjvoovmrnzszubkiqxab.supabase.co/storage/v1/object/public/media/IMAGEN%20WEB.jpg" },
     ],
     links: [
       {

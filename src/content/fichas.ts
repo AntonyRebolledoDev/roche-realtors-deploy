@@ -125,7 +125,7 @@ export const amenidadesCompletas = (p: Propiedad): string[] => [
 
 
 const galeriaDemo = (n: number): Galeria =>
-  Array.from({ length: n }, (_, i) => ({ alt: `Imagen ${i + 1}` }));
+  Array.from({ length: n }, (_, i) => ({ src: "", alt: `Imagen ${i + 1}` }));
 
 export const PROPIEDADES_DEMO: Record<string, Propiedad> = {
   casa: {

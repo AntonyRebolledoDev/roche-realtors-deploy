@@ -208,7 +208,20 @@ function Micrositio() {
         <SectionHeader eyebrow="Ubicación" title={d.ubicacion} />
         <Reveal className="overflow-hidden rounded-3xl">
           {d.mapa ? (
-            <img src={d.mapa} alt="Mapa de ubicación" className="w-full object-cover" />
+            d.mapa.includes("google.com/maps") ? (
+              <iframe
+                src={d.mapa}
+                width="100%"
+                height={400}
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Mapa de ubicación"
+              />
+            ) : (
+              <img src={d.mapa} alt="Mapa de ubicación" className="w-full object-cover" />
+            )
           ) : (
             <ImagePH label="MAPA DE UBICACIÓN" height={400} />
           )}
