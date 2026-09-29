@@ -119,7 +119,7 @@ export function SectionBand({
     bg === "gray" ? "bg-surface" : bg === "darker" ? "bg-secondary" : "bg-background";
   return (
     <section className={`w-full ${bgClass} ${className}`}>
-      <div className="mx-auto max-w-7xl px-5 md:px-8 py-20 md:py-28">{children}</div>
+      <div className="mx-auto max-w-7xl px-5 md:px-8 py-14 md:py-20 xl:py-28">{children}</div>
     </section>
   );
 }
@@ -135,7 +135,7 @@ export function CTABand({
 }) {
   return (
     <section className="w-full bg-ink text-foreground">
-      <div className="mx-auto max-w-7xl px-5 md:px-8 py-24 text-center">
+      <div className="mx-auto max-w-7xl px-5 md:px-8 py-16 xl:py-24 text-center">
         <Reveal>
           <h2 className="section-title font-semibold text-balance-tight">{title}</h2>
           <p className="mt-4 text-base text-foreground/70 max-w-xl mx-auto leading-relaxed">

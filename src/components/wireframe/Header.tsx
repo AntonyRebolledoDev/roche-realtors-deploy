@@ -46,7 +46,7 @@ export function Header() {
           />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-7">
+        <nav className="hidden xl:flex items-center gap-7">
           {NAV.map((n) => (
             <Link
               key={n.to}
@@ -59,7 +59,7 @@ export function Header() {
         </nav>
 
         <button
-          className="lg:hidden w-11 h-11 rounded-full bg-secondary flex flex-col items-center justify-center gap-1.5"
+          className="xl:hidden w-11 h-11 rounded-full bg-secondary flex flex-col items-center justify-center gap-1.5"
           aria-label="Menú"
           onClick={() => setOpen((s) => !s)}
         >
@@ -77,7 +77,7 @@ export function Header() {
       </div>
 
       <nav
-        className={`lg:hidden overflow-hidden border-t border-border bg-background/95 backdrop-blur-xl transition-[max-height,opacity] duration-500 ease-out ${
+        className={`xl:hidden overflow-hidden border-t border-border bg-background/95 backdrop-blur-xl transition-[max-height,opacity] duration-500 ease-out ${
           open ? "max-h-[32rem] opacity-100" : "max-h-0 opacity-0"
         }`}
       >

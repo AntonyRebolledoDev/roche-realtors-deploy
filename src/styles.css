@@ -302,3 +302,22 @@
   letter-spacing: 0.22em;
   color: var(--gold-soft);
 }
+
+/* ── Escritorio compacto: 14" con escalado Windows 125–150 % ── */
+/* Efectivo cuando el viewport CSS está entre 1024 y 1366 px     */
+@media (min-width: 1024px) and (max-width: 1366px) {
+  .btn-ghost-gold {
+    padding: 0.7rem 1.4rem;
+    font-size: 0.7rem;
+  }
+
+  .btn-solid-gold {
+    padding: 0.55rem 1rem;
+  }
+
+  /* Evita que el bloque de newsletter en el hero sea demasiado alto */
+  .hero-newsletter-compact {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+}

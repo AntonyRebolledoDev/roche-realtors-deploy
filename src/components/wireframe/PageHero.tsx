@@ -20,7 +20,7 @@ export function PageHero({
   ctas?: CTA[];
 }) {
   return (
-    <section className="relative w-full overflow-hidden min-h-[100svh] flex items-end">
+    <section className="relative w-full overflow-hidden min-h-[80svh] xl:min-h-svh flex items-end">
       <img
         src={image}
         alt={alt}
@@ -36,7 +36,7 @@ export function PageHero({
       <div className="absolute inset-0 bg-linear-to-r from-ink/85 via-ink/55 to-ink/30" />
       <div className="absolute inset-0 bg-linear-to-t from-ink/80 via-transparent to-ink/40" />
 
-      <div className="relative mx-auto max-w-7xl w-full px-5 md:px-8 py-16 md:py-24">
+      <div className="relative mx-auto max-w-7xl w-full px-5 md:px-8 py-12 md:py-16 xl:py-24">
         <div className="max-w-3xl animate-float-up">
           <h1 className="hero-title">{title}</h1>
           <div className="mt-7 h-px w-24 bg-gold-soft" />

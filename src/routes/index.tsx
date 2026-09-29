@@ -51,7 +51,7 @@ function Home() {
       <NewsletterModal />
 
       {/* 1. HERO */}
-      <section className="relative w-full overflow-hidden min-h-[88vh] flex items-center">
+      <section className="relative w-full overflow-hidden min-h-[80svh] xl:min-h-[88vh] flex items-center">
         {heroImages.map((img, i) => (
           <picture key={img.desktop}>
             <source media="(max-width: 767px)" srcSet={img.mobile} />
@@ -68,7 +68,7 @@ function Home() {
         <div className="absolute inset-0 bg-linear-to-r from-ink/85 via-ink/55 to-ink/30" />
         <div className="absolute inset-0 bg-linear-to-t from-ink/80 via-transparent to-ink/40" />
 
-        <div className="relative mx-auto max-w-7xl w-full px-5 md:px-8 py-24">
+        <div className="relative mx-auto max-w-7xl w-full px-5 md:px-8 py-16 xl:py-24">
           <div className="max-w-2xl animate-float-up">
             <h1 className="hero-title">{c.hero.titulo}</h1>
             <div className="mt-7 h-px w-24 bg-gold-soft" />
@@ -94,7 +94,7 @@ function Home() {
             </div>
 
             {/* Bloque newsletter — debajo de los botones */}
-            <div className="mt-8 w-full max-w-sm rounded-[6px] border border-gold-soft/40 bg-ink/75 backdrop-blur-xl px-8 py-6">
+            <div className="mt-6 w-full max-w-sm rounded-[6px] border border-gold-soft/40 bg-ink/75 backdrop-blur-xl px-6 xl:px-8 py-5 xl:py-6">
               <div className="text-[10px] uppercase tracking-[0.28em] text-foreground">
                 {c.hero.newsletterTitulo}
               </div>
