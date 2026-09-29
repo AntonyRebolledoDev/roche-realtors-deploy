@@ -70,16 +70,29 @@ function Contacto() {
       {/* 3 vías */}
       <SectionBand>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {c.vias.map((v) => (
-            <div key={v.title} className="border border-border bg-card p-6 text-center">
-              <div className="flex justify-center mb-4">
-                <img src={v.icon} alt="" aria-hidden className="h-14 w-14 object-contain" />
+          {c.vias.map((v, i) => {
+            const href =
+              i === 0 ? c.redes.whatsapp :
+              i === 1 ? "https://cal.com/rocherealtorsyucatan" :
+              `mailto:${c.datos.email}`;
+            return (
+              <div key={v.title} className="border border-border bg-card p-6 text-center">
+                <div className="flex justify-center mb-4">
+                  <img src={v.icon} alt="" aria-hidden className="h-14 w-14 object-contain" />
+                </div>
+                <div className="text-lg font-semibold mb-2">{v.title}</div>
+                <p className="text-xs text-muted-foreground mb-5">{v.desc}</p>
+                <a
+                  href={href}
+                  target={i < 2 ? "_blank" : undefined}
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#C6A35A] px-6 py-2.5 text-sm font-medium text-black transition hover:opacity-90"
+                >
+                  {v.btn} →
+                </a>
               </div>
-              <div className="text-lg font-semibold mb-2">{v.title}</div>
-              <p className="text-xs text-muted-foreground mb-5">{v.desc}</p>
-              <BtnPH label={v.btn} />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </SectionBand>
 
