@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
 
 const schema = z.string().trim().email().max(255);
 
-/** Formulario de suscripción: guarda el correo en la base del sitio. */
+const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/newsletter`;
+
+/** Formulario de suscripción: agrega el correo a Mailchimp. */
 export function NewsletterForm({
   variant = "pill",
   textoBoton = "Enviar",
@@ -31,10 +32,19 @@ export function NewsletterForm({
       return;
     }
     setEstado("enviando");
-    const { error } = await supabase
-      .from("suscriptores")
-      .insert({ email: parsed.data.toLowerCase(), origen });
-    if (error && !error.message.includes("duplicate")) {
+    try {
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const res = await fetch(EDGE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": anonKey,
+          "Authorization": `Bearer ${anonKey}`,
+        },
+        body: JSON.stringify({ email: parsed.data.toLowerCase(), origen }),
+      });
+      if (!res.ok) throw new Error("Error al suscribir");
+    } catch {
       setEstado("error");
       setMsg("No pudimos registrar su correo. Intente de nuevo.");
       return;
