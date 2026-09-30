@@ -216,22 +216,14 @@ function Ficha() {
       </SectionBand>
 
       {/* Características */}
-      {p.caracteristicas && p.caracteristicas.length > 0 && (
+      {p.caracteristicas && p.caracteristicas.some((c) => c.incluido) && (
         <SectionBand>
           <SectionHeader eyebrow="Detalle" title="Características y equipamiento" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {p.caracteristicas.map((c, i) => (
+            {p.caracteristicas.filter((c) => c.incluido).map((c, i) => (
               <Reveal key={c.label} delay={(i % 4) * 60}>
-                <div
-                  className={`rounded-2xl border px-5 py-5 text-sm ${
-                    c.incluido
-                      ? "border-border bg-card text-foreground"
-                      : "border-dashed border-border bg-transparent text-muted-foreground"
-                  }`}
-                >
-                  <span className={`mr-2 ${c.incluido ? "text-gold" : "opacity-50"}`}>
-                    {c.incluido ? "✓" : "—"}
-                  </span>
+                <div className="rounded-2xl border border-border bg-card px-5 py-5 text-sm text-foreground">
+                  <span className="mr-2 text-gold">✓</span>
                   {c.label}
                 </div>
               </Reveal>

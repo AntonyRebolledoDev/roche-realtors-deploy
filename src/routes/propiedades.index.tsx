@@ -5,9 +5,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   BtnPH,
-  Chip,
-  ImagePH,
-  ParaPH,
   PropertyCard,
   SectionBand,
   SectionHeader,
@@ -16,6 +13,8 @@ import {
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { usePropiedades } from "@/lib/catalogos";
 import { fichaDeFila } from "@/lib/propiedad-card";
+import { MapaNorteMerida } from "@/components/wireframe/MapaNorteMerida";
+import { MapaCostaYucateca } from "@/components/wireframe/MapaCostaYucateca";
 export const Route = createFileRoute("/propiedades/")({
   head: () => ({
     meta: [
@@ -39,7 +38,6 @@ const SLUG_CAT: Record<string, string> = {
 
 function Propiedades() {
   const c = useSiteContent("propiedades");
-  const zonas = c.zonas;
   const categorias = c.categorias;
   const [active, setActive] = useState<string | null>(null);
   const [subActive, setSubActive] = useState<"Residenciales" | "Macrolotes">("Residenciales");
@@ -154,26 +152,11 @@ function Propiedades() {
       {/* 4. Zonas y colonias */}
       <SectionBand bg="gray">
         <SectionHeader title={c.zonasTitulo} />
-        {zonas.publicado ? (
-          <div className="grid md:grid-cols-2 gap-10">
-            <ImagePH label="MAPA / ILUSTRACIÓN DE ZONAS" height={360} className="rounded-3xl" />
-            <div className="rounded-3xl border border-border bg-card p-6">
-              <div className="flex flex-wrap gap-2 mb-5">
-                {zonas.zonas.map((z) => (
-                  <Chip key={z} label={z} />
-                ))}
-              </div>
-              <ParaPH lines={3} />
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-3xl border border-border bg-card px-6 py-16 md:py-24 flex flex-col items-center justify-center text-center">
-            <span className="text-[13px] md:text-sm uppercase tracking-[0.34em] text-gold">
-              {zonas.proximamente.titulo}
-            </span>
-            <p className="mt-4 max-w-md text-sm text-foreground/60">{zonas.proximamente.nota}</p>
-          </div>
-        )}
+        <div className="space-y-14">
+          <MapaNorteMerida />
+          <div className="border-t border-border" />
+          <MapaCostaYucateca />
+        </div>
       </SectionBand>
 
       {/* 5. Agenda una cita (CTA global) */}

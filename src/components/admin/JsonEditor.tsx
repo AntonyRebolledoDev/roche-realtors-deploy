@@ -8,7 +8,28 @@ const ARRAY_TEMPLATES: Record<string, Record<string, unknown>> = {
   galeria: { src: "", alt: "" },
 };
 
+// Etiquetas legibles alineadas con los títulos de la página pública
+const LABEL_MAP: Record<string, string> = {
+  // Mercado — secciones (coinciden con los títulos de /inteligencia-de-mercado)
+  etiquetas: "Títulos de sección (página pública)",
+  kpisHorizontal: "KPIs — Vivienda horizontal",
+  kpisVertical: "KPIs — Vivienda vertical",
+  demograficos: "01 · Datos demográficos",
+  nse: "01 · Nivel socioeconómico — composición del mercado",
+  lecturaNSE: "01 · Lectura — Nivel socioeconómico",
+  precioHorizontal: "02 · Evolución del precio — Horizontal",
+  precioVertical: "02 · Evolución del precio — Vertical",
+  variaciones: "02 · Variaciones de precio",
+  precioSegmento: "02 · Precio por segmento",
+  destacadoVertical: "02 · Destacado vivienda vertical",
+  absorcion: "03 · Absorción según tipo de producto",
+  proyectosMunicipio: "04 · Proyectos por municipio",
+  notaMunicipios: "04 · Nota sobre municipios",
+  callouts: "04 · Datos destacados por municipio",
+};
+
 const etiqueta = (k: string) =>
+  LABEL_MAP[k] ??
   k
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/[_-]/g, " ")
