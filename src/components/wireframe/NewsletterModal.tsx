@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { ImagePH } from "./primitives";
 import { NewsletterForm } from "./NewsletterForm";
+import { useSiteContent } from "@/lib/site-content";
 
 const STORAGE_KEY = "rr_newsletter_seen_v1";
 
 export function NewsletterModal() {
+  const { imagen, imagenAlt } = useSiteContent("inicio").newsletter;
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -47,7 +49,15 @@ export function NewsletterModal() {
         </button>
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="min-h-56">
-            <ImagePH label="IMAGEN NEWSLETTER" height={"100%"} className="h-full min-h-56" />
+            {imagen ? (
+              <img
+                src={imagen}
+                alt={imagenAlt}
+                className="h-full min-h-56 w-full object-cover"
+              />
+            ) : (
+              <ImagePH label="IMAGEN NEWSLETTER" height={"100%"} className="h-full min-h-56" />
+            )}
           </div>
           <div className="p-6 md:p-8 flex flex-col justify-center gap-4">
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">

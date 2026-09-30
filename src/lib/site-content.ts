@@ -195,6 +195,8 @@ export const CONTENT_DEFAULTS = {
       etiqueta: "Correo electrónico",
       textoBoton: "Suscribirme",
       confirmacion: "¡Gracias! Su suscripción ha sido registrada.",
+      imagen: "",
+      imagenAlt: "Newsletter Roche Realtors",
     },
     agendaCita: {
       titulo: "Agende una cita",
