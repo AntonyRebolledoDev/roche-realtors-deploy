@@ -1,14 +1,12 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import {
   Breadcrumb,
-  BtnPH,
   Chip,
   ImagePH,
   ParaPH,
   SectionBand,
 } from "@/components/wireframe/primitives";
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
-import { SocialIcons } from "@/components/wireframe/SocialIcons";
 import { FIRMA } from "@/content/textos";
 import { useArticulos } from "@/lib/catalogos";
 
@@ -41,9 +39,8 @@ function Articulo() {
         <p className="mt-3 text-muted-foreground">
           {art ? art.entradilla : "Bajada / subtítulo del artículo (contenido dinámico)."}
         </p>
-        <div className="mt-5 flex items-center justify-between text-xs text-muted-foreground border-y border-border py-3">
+        <div className="mt-5 text-xs text-muted-foreground border-y border-border py-3">
           <span>Roger Roche M. · DD MMM AAAA</span>
-          <BtnPH label="⤴ Compartir" variant="outline" size="sm" />
         </div>
       </div>
 
@@ -99,12 +96,6 @@ function Articulo() {
         <div className="border-t border-border pt-5 text-sm text-foreground">{FIRMA}</div>
       </article>
 
-      {/* Compartir */}
-      <div className="mx-auto max-w-3xl px-4 md:px-6 mt-10 border-t border-border pt-5 flex items-center justify-between">
-        <span className="text-xs uppercase tracking-wider text-muted-foreground">Compartir</span>
-        <SocialIcons size={32} iconSize={16} />
-
-      </div>
 
       {/* Relacionados */}
       <SectionBand bg="gray" className="mt-16">
