@@ -215,12 +215,16 @@ export const CONTENT_DEFAULTS = {
     },
     seleccionTitulo: "Elija una categoría para comenzar",
     zonasTitulo: "Zonas y Colonias",
+    // `clave` es el identificador interno que decide qué propiedades se
+    // muestran en cada pestaña; no se expone en el editor de contenido para
+    // que renombrar la pestaña (p. ej. "Terrenos" → "Terrenos y Macrolotes")
+    // nunca rompa el filtro.
     categorias: [
-      { nombre: "Casas", imagen: catCasas },
-      { nombre: "Departamentos", imagen: catDeptos },
-      { nombre: "Terrenos", imagen: catTerrenos },
-      { nombre: "Haciendas", imagen: catHaciendas },
-      { nombre: "Comercial / Industrial", imagen: catComercial },
+      { nombre: "Casas", imagen: catCasas, clave: "casa" },
+      { nombre: "Departamentos", imagen: catDeptos, clave: "departamento" },
+      { nombre: "Terrenos y Macrolotes", imagen: catTerrenos, clave: "terrenos" },
+      { nombre: "Haciendas", imagen: catHaciendas, clave: "hacienda" },
+      { nombre: "Comercial / Industrial", imagen: catComercial, clave: "comercial-industrial" },
     ],
     zonas: ZONAS_SECCION,
   },

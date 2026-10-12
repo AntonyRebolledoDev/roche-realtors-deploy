@@ -26,6 +26,46 @@ export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   );
 }
 
+/**
+ * Campo de texto con un prefijo y/o sufijo fijos (p. ej. "$" … "MXN", o
+ * … "m²") para que no haya que escribir el símbolo cada vez. El valor que
+ * se entrega a `onChange` ya incluye el prefijo/sufijo compuesto.
+ */
+export function UnitInput({
+  value,
+  onChange,
+  prefix = "",
+  suffix,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  prefix?: string;
+  suffix: string;
+  placeholder?: string;
+}) {
+  let nucleo = (value ?? "").trim();
+  if (prefix && nucleo.startsWith(prefix)) nucleo = nucleo.slice(prefix.length);
+  if (nucleo.endsWith(suffix)) nucleo = nucleo.slice(0, -suffix.length);
+  nucleo = nucleo.trim();
+
+  return (
+    <div className="flex items-stretch rounded-md border border-white/15 bg-black/40 focus-within:border-gold">
+      {prefix && <span className="flex items-center pl-3 text-sm text-white/40">{prefix}</span>}
+      <input
+        value={nucleo}
+        placeholder={placeholder}
+        onChange={(e) => {
+          const v = e.target.value;
+          onChange(v ? `${prefix}${v} ${suffix}` : "");
+        }}
+        className="w-full bg-transparent px-2 py-2 text-sm text-white outline-hidden"
+      />
+      <span className="flex items-center pr-3 text-sm text-white/40">{suffix}</span>
+    </div>
+  );
+}
+
 export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select

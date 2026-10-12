@@ -84,6 +84,7 @@ function AdminPropiedades() {
       setGuardando(false);
       return;
     }
+    const etiquetaCategoria = CATEGORIAS.find(([v]) => v === edicion.categoria)?.[1] ?? edicion.categoria;
     const payload = {
       slug: edicion.slug || slugify(edicion.nombre),
       nombre: edicion.nombre,
@@ -92,7 +93,10 @@ function AdminPropiedades() {
       destacada: edicion.destacada,
       archivada: edicion.archivada,
       orden: edicion.orden,
-      data: edicion.data as never,
+      // El nombre y la categoría se capturan arriba en campos dedicados; se
+      // reflejan aquí para que no queden desincronizados con los que se
+      // guardaron dentro de `data` (usados por la ficha pública).
+      data: { ...edicion.data, nombre: edicion.nombre, categoria: etiquetaCategoria } as never,
     };
     const res = edicion.id
       ? await supabase.from("propiedades").update(payload).eq("id", edicion.id)
@@ -213,6 +217,7 @@ function AdminPropiedades() {
           <JsonEditor
             value={edicion.data}
             onChange={(v) => setEdicion({ ...edicion, data: v as Record<string, unknown> })}
+            ocultar={["nombre", "categoria"]}
           />
         </div>
       </div>

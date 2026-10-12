@@ -72,7 +72,9 @@ function AdminDesarrollos() {
       destacado: edicion.destacado,
       archivado: edicion.archivado,
       orden: edicion.orden,
-      data: edicion.data as never,
+      // El nombre se captura arriba en un campo dedicado; se refleja aquí
+      // para que no quede desincronizado con el guardado dentro de `data`.
+      data: { ...edicion.data, nombre: edicion.nombre } as never,
     };
     const res = edicion.id
       ? await supabase.from("desarrollos").update(payload).eq("id", edicion.id)
@@ -169,6 +171,7 @@ function AdminDesarrollos() {
           <JsonEditor
             value={edicion.data}
             onChange={(v) => setEdicion({ ...edicion, data: v as Record<string, unknown> })}
+            ocultar={["nombre"]}
           />
         </div>
       </div>

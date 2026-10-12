@@ -27,24 +27,26 @@ export const Route = createFileRoute("/propiedades/")({
   component: Propiedades,
 });
 
-const SLUG_CAT: Record<string, string> = {
-  Casas: "casa",
-  Departamentos: "departamento",
-  Haciendas: "hacienda",
-  "Comercial / Industrial": "comercial-industrial",
-  Residenciales: "terreno-residencial",
-  Macrolotes: "macrolote",
+// Qué categorías de la base de datos corresponden a cada pestaña (por
+// `clave`, no por el nombre visible —ese lo edita libremente el admin—).
+const EN_CATEGORIA: Record<string, (categoria: string) => boolean> = {
+  casa: (cat) => cat === "casa",
+  departamento: (cat) => cat === "departamento",
+  terrenos: (cat) => cat === "terreno-residencial" || cat === "macrolote",
+  hacienda: (cat) => cat === "hacienda",
+  "comercial-industrial": (cat) => cat === "comercial-industrial",
 };
 
 function Propiedades() {
   const c = useSiteContent("propiedades");
   const categorias = c.categorias;
   const [active, setActive] = useState<string | null>(null);
-  const [subActive, setSubActive] = useState<"Residenciales" | "Macrolotes">("Residenciales");
 
-  const catActiva =
-    SLUG_CAT[active === "Terrenos" ? subActive : (active ?? "")] ?? "casa";
-  const fichas = usePropiedades(catActiva).map(fichaDeFila);
+  const tileActiva = categorias.find((t) => t.clave === active);
+  const filtro = active ? EN_CATEGORIA[active] : undefined;
+  const fichas = usePropiedades()
+    .filter((p) => filtro?.(p.categoria))
+    .map(fichaDeFila);
 
   return (
     <>
@@ -61,22 +63,11 @@ function Propiedades() {
       <div className="sticky top-16 z-40 bg-card border-b border-border">
         <div className="mx-auto max-w-7xl px-4 md:px-8 py-3 flex gap-2 overflow-x-auto">
           {categorias.map((t) => (
-            <button key={t.nombre} onClick={() => setActive(t.nombre)}>
-              <Tab label={t.nombre} active={active === t.nombre} />
+            <button key={t.clave} onClick={() => setActive(t.clave)}>
+              <Tab label={t.nombre} active={active === t.clave} />
             </button>
           ))}
         </div>
-        {active === "Terrenos" && (
-          <div className="border-t border-dashed border-border bg-secondary">
-            <div className="mx-auto max-w-7xl px-4 md:px-8 py-3 flex gap-2">
-              {(["Residenciales", "Macrolotes"] as const).map((s) => (
-                <button key={s} onClick={() => setSubActive(s)}>
-                  <Tab label={s} active={subActive === s} dashed />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* 3a. Pantalla de selección */}
@@ -86,8 +77,8 @@ function Propiedades() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {categorias.map((t, i) => (
               <button
-                key={t.nombre}
-                onClick={() => setActive(t.nombre)}
+                key={t.clave}
+                onClick={() => setActive(t.clave)}
                 className={`group text-left overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-gold-soft ${
                   i === categorias.length - 1 ? "md:col-span-2 md:max-w-[calc(50%-1rem)] md:mx-auto md:w-full" : ""
                 }`}
@@ -111,10 +102,11 @@ function Propiedades() {
       ) : (
         /* 3b. Grid filtrado */
         <SectionBand>
-          <SectionHeader title={active === "Terrenos" ? `Terrenos · ${subActive}` : active} />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {fichas.length > 0
-              ? fichas.map((f) => (
+          <SectionHeader title={tileActiva?.nombre ?? ""} />
+          {fichas.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {fichas.map((f) => (
                   <Link
                     key={f.slug}
                     to="/propiedades/$id"
@@ -131,21 +123,22 @@ function Propiedades() {
                       precio={f.precio}
                     />
                   </Link>
-                ))
-                : Array.from({ length: 6 }).map((_, i) => (
-                  <Link
-                    key={i}
-                    to="/propiedades/$id"
-                    params={{ id: `${catActiva}-${i + 1}` }}
-                    className="contents"
-                  >
-                    <PropertyCard />
-                  </Link>
                 ))}
-          </div>
-          <div className="mt-8 text-center">
-            <BtnPH label="Ver más" variant="outline" />
-          </div>
+              </div>
+              <div className="mt-8 text-center">
+                <BtnPH label="Ver más" variant="outline" />
+              </div>
+            </>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border bg-card/40 py-16 text-center">
+              <p className="text-base text-foreground">
+                Por el momento no hay propiedades disponibles en esta categoría.
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Vuelva pronto o contáctenos para conocer opciones similares.
+              </p>
+            </div>
+          )}
         </SectionBand>
       )}
 

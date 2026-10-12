@@ -214,6 +214,12 @@ export function Tab({
   );
 }
 
+const OPERACION_BADGE: Record<string, string> = {
+  Venta: "border-gold-soft/50 text-gold-soft",
+  Renta: "border-sky-400/50 text-sky-300",
+  Preventa: "border-amber-400/50 text-amber-300",
+};
+
 export function PropertyCard({
   title = "Nombre de la propiedad",
   tipo = "Casa",
@@ -245,7 +251,11 @@ export function PropertyCard({
         ) : (
           <ImagePH label="IMAGEN" aspect="16 / 9" />
         )}
-        <span className="absolute top-4 left-4 rounded-full border border-gold-soft/50 bg-background/80 backdrop-blur-md text-[11px] px-3 py-1 text-gold-soft">
+        <span
+          className={`absolute top-4 left-4 rounded-full border bg-background/80 backdrop-blur-md text-[11px] px-3 py-1 ${
+            OPERACION_BADGE[operacion] ?? OPERACION_BADGE.Venta
+          }`}
+        >
           {operacion}
         </span>
         <span className="absolute top-4 right-4 rounded-full bg-background/80 backdrop-blur-md w-9 h-9 flex items-center justify-center text-muted-foreground transition-colors group-hover:text-gold">

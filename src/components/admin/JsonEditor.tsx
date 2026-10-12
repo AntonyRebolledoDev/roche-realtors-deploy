@@ -1,15 +1,20 @@
-import { Btn, ImageField, Label, Select, TextArea, TextInput } from "./ui";
+import { Btn, ImageField, Label, Select, TextArea, TextInput, UnitInput } from "./ui";
 import { GaleriaField } from "./GaleriaField";
+import { MedidasField } from "./MedidasField";
 
 const IMAGEN_RE = /(imagen|portada|foto|banner|logo|icon|thumb|src|desktop|mobile)/i;
 const MAPA_RE = /^mapa$/i;
 const LARGO_RE = /(texto|descripcion|parrafo|resumen|nota|contenido|bio|intro|cuerpo|desc)/i;
+// Montos en pesos: se escriben solo los dígitos, "$" y "MXN" se agregan solos.
+const DINERO_RE = /^(precio|precioM2|mantenimiento)$/i;
 
 // Opciones fijas para el campo `estatus` (par label/valor administrado como select)
 const ESTATUS_OPCIONES: Record<string, string[]> = {
   Estatus: ["Disponible", "Apartado(a)", "Vendido", "Rentado"],
   "Estado de conservación": ["Nuevo", "Regular", "Por remodelar", "Bueno", "Excelente"],
 };
+
+const TIPO_OFERTA_OPCIONES = ["Venta", "Renta", "Preventa"];
 
 // Etiquetas legibles alineadas con los títulos de la página pública
 const LABEL_MAP: Record<string, string> = {
@@ -60,11 +65,14 @@ export function JsonEditor({
   onChange,
   nombre,
   nivel = 0,
+  ocultar = [],
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
   nombre?: string;
   nivel?: number;
+  /** Claves del nivel superior que ya se editan con un campo dedicado fuera de este editor. */
+  ocultar?: string[];
 }) {
   if (typeof value === "boolean") {
     return (
@@ -119,6 +127,29 @@ export function JsonEditor({
         </div>
       );
     }
+    if (key === "tipoOferta") {
+      return (
+        <div>
+          <Label>Tipo de oferta</Label>
+          <Select value={v} onChange={(e) => onChange(e.target.value)}>
+            {!TIPO_OFERTA_OPCIONES.includes(v) && <option value="">— Seleccionar —</option>}
+            {TIPO_OFERTA_OPCIONES.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </Select>
+        </div>
+      );
+    }
+    if (DINERO_RE.test(key)) {
+      return (
+        <div>
+          <Label>{etiqueta(key)}</Label>
+          <UnitInput value={v} prefix="$" suffix="MXN" placeholder="0" onChange={onChange} />
+        </div>
+      );
+    }
     const largo = LARGO_RE.test(key) || v.length > 90;
     return (
       <div>
@@ -163,6 +194,10 @@ export function JsonEditor({
         })}
       </div>
     );
+  }
+
+  if (nombre === "medidas" && Array.isArray(value)) {
+    return <MedidasField value={value as [string, string][]} onChange={onChange} />;
   }
 
   if (nombre === "galeria" && Array.isArray(value)) {
@@ -249,7 +284,13 @@ export function JsonEditor({
     );
   }
 
-  const entries = Object.entries(value as Record<string, unknown>);
+  const entries = Object.entries(value as Record<string, unknown>).filter(
+    // `clave` es siempre un identificador interno (p. ej. categorias[].clave)
+    // y se oculta sin importar la profundidad; `ocultar` solo aplica en el
+    // nivel superior para no tapar campos legítimos que compartan nombre
+    // más abajo (p. ej. desarrollador.nombre).
+    ([k]) => k !== "clave" && (nivel > 0 || !ocultar.includes(k)),
+  );
   return (
     <div className={nivel === 0 ? "space-y-6" : "space-y-4"}>
       {nombre && nivel > 0 && (
