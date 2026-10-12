@@ -26,6 +26,18 @@ export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   );
 }
 
+export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      {...props}
+      className={cn(
+        "w-full rounded-md border border-white/15 bg-black/40 px-3 py-2 text-sm text-white outline-hidden focus:border-gold",
+        props.className,
+      )}
+    />
+  );
+}
+
 export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea

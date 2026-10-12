@@ -9,6 +9,7 @@ import {
   SectionHeader,
 } from "@/components/wireframe/primitives";
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
+import { Lightbox } from "@/components/wireframe/Lightbox";
 import { PROPIEDADES_DEMO, amenidadesCompletas, type Propiedad } from "@/content/fichas";
 import { usePropiedad } from "@/lib/catalogos";
 export const Route = createFileRoute("/propiedades/$id")({
@@ -37,6 +38,8 @@ const VARIANTES = [
   { key: "departamento", label: "Departamento" },
   { key: "terreno-residencial", label: "Terreno residencial" },
   { key: "macrolote", label: "Macrolote" },
+  { key: "hacienda", label: "Hacienda" },
+  { key: "comercial-industrial", label: "Comercial / Industrial" },
 ];
 
 function Dato({ label, valor }: { label: string; valor: string }) {
@@ -81,6 +84,7 @@ function Ficha() {
   const amenidades = amenidadesCompletas(p);
   const principal = p.galeria[0];
   const minis = p.galeria.slice(1, 5);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
 
   return (
@@ -112,7 +116,12 @@ function Ficha() {
       {/* Galería */}
       <section className="mx-auto max-w-7xl px-5 md:px-8 mt-6">
         <div className="grid md:grid-cols-3 gap-3">
-          <div className="md:col-span-2 overflow-hidden rounded-3xl">
+          <button
+            type="button"
+            className="md:col-span-2 overflow-hidden rounded-3xl text-left"
+            onClick={() => setLightboxIndex(0)}
+            aria-label="Ver imagen principal en grande"
+          >
             {principal?.src ? (
               <img
                 src={principal.src}
@@ -123,10 +132,16 @@ function Ficha() {
             ) : (
               <ImagePH label="IMAGEN PRINCIPAL" aspect="16 / 10" />
             )}
-          </div>
+          </button>
           <div className="grid grid-cols-2 gap-3">
             {minis.map((g, i) => (
-              <div key={g.alt} className="relative overflow-hidden rounded-2xl">
+              <button
+                type="button"
+                key={g.alt}
+                className="relative overflow-hidden rounded-2xl text-left"
+                onClick={() => setLightboxIndex(i + 1)}
+                aria-label={`Ver imagen ${i + 2} en grande`}
+              >
                 {g.src ? (
                   <img src={g.src} alt={g.alt} className="w-full object-cover" style={{ aspectRatio: "4 / 3" }} />
                 ) : (
@@ -137,7 +152,7 @@ function Ficha() {
                     +{p.galeria.length - 5}
                   </div>
                 )}
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -158,7 +173,7 @@ function Ficha() {
             </Reveal>
             <Reveal delay={80} className="mt-8 space-y-5">
               {p.descripcion.map((t, i) => (
-                <p key={i} className="text-base leading-8 text-muted-foreground">
+                <p key={i} className="text-base leading-8 text-muted-foreground whitespace-pre-line">
                   {t}
                 </p>
               ))}
@@ -286,6 +301,15 @@ function Ficha() {
       </SectionBand>
 
       <AgendaCita />
+
+      {lightboxIndex !== null && (
+        <Lightbox
+          imagenes={p.galeria}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
+      )}
     </>
   );
 }

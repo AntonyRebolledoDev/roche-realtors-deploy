@@ -15,6 +15,8 @@ const CATEGORIAS = [
   ["departamento", "Departamento"],
   ["terreno-residencial", "Terreno residencial"],
   ["macrolote", "Terreno macrolote"],
+  ["hacienda", "Hacienda"],
+  ["comercial-industrial", "Comercial / Industrial"],
 ] as const;
 
 const MAX_DESTACADAS = 6;

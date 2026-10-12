@@ -88,7 +88,13 @@ export const DESARROLLO_DEMO: Desarrollo = {
 };
 
 export type Propiedad = {
-  categoria: "Casa" | "Departamento" | "Terreno residencial" | "Terreno macrolote";
+  categoria:
+    | "Casa"
+    | "Departamento"
+    | "Terreno residencial"
+    | "Terreno macrolote"
+    | "Hacienda"
+    | "Comercial / Industrial";
   nombre: string;
   tipoPropiedad: string;
   tipoOferta: Opcion;
@@ -270,5 +276,88 @@ export const PROPIEDADES_DEMO: Record<string, Propiedad> = {
       ["Fondo", "125 m"],
     ],
     servicios: ["Calle de acceso", "Luz", "Agua", "Telefonía"],
+  },
+  hacienda: {
+    categoria: "Hacienda",
+    nombre: "Nombre de la hacienda",
+    tipoPropiedad: "Hacienda",
+    tipoOferta: "Venta",
+    zonaAbierta: "Zona rural · Yucatán",
+    descripcion: [
+      "Hacienda henequenera restaurada, con casa principal, capilla y áreas verdes de gran formato.",
+      "Combina arquitectura patrimonial con potencial para uso residencial, hotel boutique o eventos.",
+    ],
+    galeria: galeriaDemo(8),
+    disponibilidad: "Entrega inmediata",
+    precio: "$28,500,000 MXN",
+    mantenimiento: "$6,500 MXN",
+    medidas: [
+      ["Terreno", "20,000 m²"],
+      ["Construcción", "1,200 m²"],
+      ["Plantas", "1"],
+      ["Calidad de acabados", "Premium"],
+    ],
+    distribucion: [
+      ["Recámaras", "5"],
+      ["Baños", "6"],
+      ["Medio baño", "2"],
+      ["Capilla", "1"],
+      ["Casa de máquinas", "1"],
+      ["Estacionamiento", "6 vehículos"],
+    ],
+    caracteristicas: [
+      { label: "Alberca", incluido: true },
+      { label: "Capilla", incluido: true },
+      { label: "Jardín exterior", incluido: true },
+      { label: "Palapa / Terraza", incluido: true },
+      { label: "Casa de máquinas", incluido: true },
+      { label: "Cisterna propia", incluido: true },
+      { label: "Planta eléctrica", incluido: false },
+      { label: "Amueblada", incluido: false },
+    ],
+    estatus: [
+      ["Estatus", "Disponible"],
+      ["Estado de conservación", "Bueno"],
+    ],
+  },
+  "comercial-industrial": {
+    categoria: "Comercial / Industrial",
+    nombre: "Nombre del inmueble",
+    tipoPropiedad: "Nave industrial",
+    tipoOferta: "Venta",
+    zonaAbierta: "Parque industrial · Mérida",
+    descripcion: [
+      "Nave industrial con oficinas, andén de carga y patio de maniobras, en parque con vigilancia 24/7.",
+    ],
+    galeria: galeriaDemo(6),
+    disponibilidad: "Entrega inmediata",
+    precio: "$15,000,000 MXN",
+    mantenimiento: "$5,200 MXN",
+    medidas: [
+      ["Terreno", "2,500 m²"],
+      ["Construcción", "1,800 m²"],
+      ["Altura de nave", "9 m"],
+      ["Calidad de acabados", "Comercial"],
+    ],
+    distribucion: [
+      ["Oficinas", "2"],
+      ["Baños", "4"],
+      ["Andenes de carga", "2"],
+      ["Patio de maniobras", "1"],
+      ["Estacionamiento", "10 vehículos"],
+    ],
+    caracteristicas: [
+      { label: "Andén de carga", incluido: true },
+      { label: "Oficinas acondicionadas", incluido: true },
+      { label: "Patio de maniobras", incluido: true },
+      { label: "Subestación eléctrica", incluido: true },
+      { label: "Vigilancia 24/7", incluido: true },
+      { label: "Cisterna propia", incluido: false },
+    ],
+    servicios: ["Calle de acceso", "Luz", "Agua", "Telefonía"],
+    estatus: [
+      ["Estatus", "Disponible"],
+      ["Estado de conservación", "Bueno"],
+    ],
   },
 };

@@ -1,11 +1,14 @@
-import { Btn, ImageField, Label, TextArea, TextInput } from "./ui";
+import { Btn, ImageField, Label, Select, TextArea, TextInput } from "./ui";
+import { GaleriaField } from "./GaleriaField";
 
 const IMAGEN_RE = /(imagen|portada|foto|banner|logo|icon|thumb|src|desktop|mobile)/i;
 const MAPA_RE = /^mapa$/i;
 const LARGO_RE = /(texto|descripcion|parrafo|resumen|nota|contenido|bio|intro|cuerpo|desc)/i;
 
-const ARRAY_TEMPLATES: Record<string, Record<string, unknown>> = {
-  galeria: { src: "", alt: "" },
+// Opciones fijas para el campo `estatus` (par label/valor administrado como select)
+const ESTATUS_OPCIONES: Record<string, string[]> = {
+  Estatus: ["Disponible", "Apartado(a)", "Vendido", "Rentado"],
+  "Estado de conservación": ["Nuevo", "Regular", "Por remodelar", "Bueno", "Excelente"],
 };
 
 // Etiquetas legibles alineadas con los títulos de la página pública
@@ -36,7 +39,10 @@ const etiqueta = (k: string) =>
     .replace(/^./, (c) => c.toUpperCase());
 
 function nuevoComo(ejemplo: unknown): unknown {
-  if (Array.isArray(ejemplo)) return [];
+  // Para tuplas (p. ej. ["Construcción", "180 m²"]) se conserva la forma —
+  // mismo número de campos, vacíos — en vez de devolver un arreglo vacío,
+  // que al guardarse como elemento "roto" hacía fallar la ficha pública.
+  if (Array.isArray(ejemplo)) return ejemplo.map((v) => nuevoComo(v));
   if (ejemplo && typeof ejemplo === "object") {
     return Object.fromEntries(Object.entries(ejemplo).map(([k, v]) => [k, nuevoComo(v)]));
   }
@@ -126,14 +132,54 @@ export function JsonEditor({
     );
   }
 
+  if (nombre === "estatus" && Array.isArray(value)) {
+    const tuplas = value as [string, string][];
+    const setValor = (label: string, valor: string) => {
+      const labels = Object.keys(ESTATUS_OPCIONES);
+      const siguiente = labels.map((l) => {
+        if (l === label) return [l, valor] as [string, string];
+        const existente = tuplas.find((t) => t[0] === l);
+        return [l, existente?.[1] ?? ESTATUS_OPCIONES[l][0]] as [string, string];
+      });
+      onChange(siguiente);
+    };
+    return (
+      <div className="space-y-4">
+        {Object.entries(ESTATUS_OPCIONES).map(([label, opciones]) => {
+          const actual = tuplas.find((t) => t[0] === label)?.[1] ?? "";
+          return (
+            <div key={label}>
+              <Label>{label}</Label>
+              <Select value={actual} onChange={(e) => setValor(label, e.target.value)}>
+                {!opciones.includes(actual) && <option value="">— Seleccionar —</option>}
+                {opciones.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (nombre === "galeria" && Array.isArray(value)) {
+    return (
+      <GaleriaField
+        value={value as { src?: string; alt: string }[]}
+        onChange={(v) => onChange(v)}
+      />
+    );
+  }
+
   if (Array.isArray(value)) {
     const modelo = value[0];
-    const plantillaFija = nombre ? ARRAY_TEMPLATES[nombre] : undefined;
     const plantilla: Record<string, unknown> | null =
-      plantillaFija ??
-      ((modelo && typeof modelo === "object" && !Array.isArray(modelo))
-        ? nuevoComo(modelo) as Record<string, unknown>
-        : null);
+      modelo && typeof modelo === "object" && !Array.isArray(modelo)
+        ? (nuevoComo(modelo) as Record<string, unknown>)
+        : null;
     return (
       <div className="space-y-3">
         {nombre && <Label>{etiqueta(nombre)}</Label>}
@@ -195,7 +241,7 @@ export function JsonEditor({
         <Btn
           type="button"
           variant="soft"
-          onClick={() => onChange([...value, plantillaFija ?? nuevoComo(modelo ?? "")])}
+          onClick={() => onChange([...value, nuevoComo(modelo ?? "")])}
         >
           Añadir elemento
         </Btn>

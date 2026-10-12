@@ -30,8 +30,8 @@ export const Route = createFileRoute("/propiedades/")({
 const SLUG_CAT: Record<string, string> = {
   Casas: "casa",
   Departamentos: "departamento",
-  Haciendas: "casa",
-  "Comercial / Industrial": "casa",
+  Haciendas: "hacienda",
+  "Comercial / Industrial": "comercial-industrial",
   Residenciales: "terreno-residencial",
   Macrolotes: "macrolote",
 };

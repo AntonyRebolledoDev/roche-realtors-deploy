@@ -102,7 +102,7 @@ function Micrositio() {
               <h2 className="subsection-title font-semibold tracking-tight">El desarrollo</h2>
               <div className="mt-5 space-y-5">
                 {d.descripcionGeneral.map((p, i) => (
-                  <p key={i} className="text-base leading-8 text-muted-foreground">
+                  <p key={i} className="text-base leading-8 text-muted-foreground whitespace-pre-line">
                     {p}
                   </p>
                 ))}

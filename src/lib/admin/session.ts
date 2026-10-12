@@ -19,6 +19,7 @@ export function useCuenta(): Cuenta {
 
   useEffect(() => {
     let vivo = true;
+    let sesionId: string | null = null;
 
     const cargar = async (s: Session | null) => {
       if (!vivo) return;
@@ -40,8 +41,20 @@ export function useCuenta(): Cuenta {
       setCargando(false);
     };
 
-    supabase.auth.getSession().then(({ data }) => cargar(data.session));
+    supabase.auth.getSession().then(({ data }) => {
+      sesionId = data.session?.user.id ?? null;
+      cargar(data.session);
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      // Supabase revalida/refresca el token al recuperar el foco de la pestaña,
+      // disparando este evento aunque sea la misma sesión. Solo mostramos el
+      // estado "cargando" (que desmonta el Outlet) cuando el usuario realmente cambia.
+      const nuevoId = s?.user.id ?? null;
+      if (nuevoId === sesionId) {
+        setSession(s);
+        return;
+      }
+      sesionId = nuevoId;
       setCargando(true);
       cargar(s);
     });

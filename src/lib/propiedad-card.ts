@@ -23,7 +23,7 @@ export type FichaPropiedadCard = {
 export function fichaDeFila(f: FilaPropiedad): FichaPropiedadCard {
   const d = (f.data ?? {}) as Partial<Propiedad>;
   const par = (lista?: [string, string][], clave?: string) =>
-    lista?.find(([k]) => k.toLowerCase() === clave)?.[1];
+    lista?.find((t) => t?.[0]?.toLowerCase() === clave)?.[1];
 
   const detalle = [
     par(d.distribucion, "recámaras") && `${par(d.distribucion, "recámaras")} rec`,
@@ -38,7 +38,7 @@ export function fichaDeFila(f: FilaPropiedad): FichaPropiedadCard {
     nombre: d.nombre || f.nombre,
     tipo: d.tipoPropiedad || d.categoria || "",
     operacion: d.tipoOferta || "Venta",
-    imagen: sanitizeImg((d as Record<string, unknown>).imagenPortada as string) ?? sanitizeImg(d.galeria?.find((g) => g.src)?.src),
+    imagen: sanitizeImg((d as Record<string, unknown>).imagenPortada as string) ?? sanitizeImg(d.galeria?.find((g) => g?.src)?.src),
     zona: d.desarrollo || d.zonaAbierta || "",
     detalle,
     precio: d.precio || "",
