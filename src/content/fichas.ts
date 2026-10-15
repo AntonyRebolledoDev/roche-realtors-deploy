@@ -39,7 +39,7 @@ export type Desarrollo = {
   tipoOperacion: Opcion;
   descripcionCorta: string;
   desde?: string;
-  portada?: string;
+  imagen?: string;
   imagenRepresentativa?: string;
   descripcionGeneral: string[];
   masterPlan?: string;
@@ -175,6 +175,7 @@ export const PROPIEDADES_DEMO: Record<string, Propiedad> = {
       { label: "Equipada", incluido: true },
       { label: "Amueblada", incluido: false },
     ],
+    amenidades: [...CATALOGOS.amenidadesBase],
     estatus: [
       ["Estatus", "Nueva"],
       ["Estado de conservación", "Excelente"],
@@ -259,23 +260,46 @@ export const PROPIEDADES_DEMO: Record<string, Propiedad> = {
       { label: "Amenidades", incluido: true },
       { label: "Estacionamiento para visitas", incluido: true },
     ],
+    amenidades: [...CATALOGOS.amenidadesBase],
+    estatus: [
+      ["Estatus", "Disponible"],
+      ["Estado de conservación", "N/A"],
+    ],
   },
   macrolote: {
     categoria: "Terreno macrolote",
     nombre: "Macrolote",
     tipoPropiedad: "Terreno macrolote",
     tipoOferta: "Venta",
-    uso: "Mixto",
-    zonaAbierta: "Zona norte · Mérida",
+    desarrollo: "Nombre del desarrollo",
     descripcion: ["Superficie de gran formato con frente a vialidad primaria."],
     galeria: galeriaDemo(6),
+    disponibilidad: "Entrega inmediata",
+    precio: "$12,000,000 MXN",
+    precioM2: "$1,200 MXN",
+    mantenimiento: "$3,500 MXN",
     medidas: [
-      ["Característica", "Regular"],
+      ["Ubicación", "Avenida"],
       ["Dimensión", "10,000 m²"],
+      ["Tipo de terreno", "Regular"],
       ["Frente", "80 m"],
       ["Fondo", "125 m"],
     ],
     servicios: ["Calle de acceso", "Luz", "Agua", "Telefonía"],
+    caracteristicas: [
+      { label: "Vista a parque", incluido: false },
+      { label: "Vista a green", incluido: false },
+      { label: "Vista al agua", incluido: false },
+      { label: "Calle", incluido: true },
+      { label: "Casa club", incluido: false },
+      { label: "Amenidades", incluido: false },
+      { label: "Estacionamiento para visitas", incluido: false },
+    ],
+    amenidades: [...CATALOGOS.amenidadesBase],
+    estatus: [
+      ["Estatus", "Disponible"],
+      ["Estado de conservación", "N/A"],
+    ],
   },
   hacienda: {
     categoria: "Hacienda",
@@ -315,6 +339,7 @@ export const PROPIEDADES_DEMO: Record<string, Propiedad> = {
       { label: "Planta eléctrica", incluido: false },
       { label: "Amueblada", incluido: false },
     ],
+    amenidades: [...CATALOGOS.amenidadesBase],
     estatus: [
       ["Estatus", "Disponible"],
       ["Estado de conservación", "Bueno"],
@@ -354,6 +379,7 @@ export const PROPIEDADES_DEMO: Record<string, Propiedad> = {
       { label: "Vigilancia 24/7", incluido: true },
       { label: "Cisterna propia", incluido: false },
     ],
+    amenidades: [...CATALOGOS.amenidadesBase],
     servicios: ["Calle de acceso", "Luz", "Agua", "Telefonía"],
     estatus: [
       ["Estatus", "Disponible"],

@@ -78,8 +78,16 @@ function Ficha() {
   const desdeUrl = VARIANTES.find((v) => id.startsWith(v.key))?.key ?? "casa";
   const [variante, setVariante] = useState(desdeUrl);
   const demo: Propiedad = PROPIEDADES_DEMO[variante] ?? PROPIEDADES_DEMO["casa"]!;
+  // Para una propiedad real, la plantilla base se elige por su categoría
+  // guardada (fila.categoria), no por el slug de la URL — de lo contrario un
+  // terreno con un slug como "terreno-esquina-dzitya" (que no empieza con
+  // "terreno-residencial") caía en la plantilla de Casa y heredaba secciones
+  // que no le corresponden, como "Distribución".
+  const base: Propiedad = fila
+    ? (PROPIEDADES_DEMO[fila.categoria] ?? PROPIEDADES_DEMO["casa"]!)
+    : demo;
   const p: Propiedad = fila
-    ? ({ ...demo, ...(fila.data as Partial<Propiedad>), nombre: fila.nombre } as Propiedad)
+    ? ({ ...base, ...(fila.data as Partial<Propiedad>), nombre: fila.nombre } as Propiedad)
     : demo;
   const amenidades = amenidadesCompletas(p);
   const principal = p.galeria[0];

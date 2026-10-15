@@ -252,3 +252,25 @@ export function useDesarrollos(): FilaDesarrollo[] {
   });
   return data ?? [];
 }
+
+export function useDesarrollo(slug: string): FilaDesarrollo | null {
+  const { data } = useQuery({
+    queryKey: ["pub", "desarrollo", slug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("desarrollos")
+        .select("id,slug,nombre,destacado,data")
+        .eq("slug", slug)
+        .eq("estado", "publicado")
+        .eq("archivado", false)
+        .maybeSingle();
+      if (error) throw error;
+      return (data ?? null) as unknown as FilaDesarrollo | null;
+    },
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
+  });
+  return data ?? null;
+}

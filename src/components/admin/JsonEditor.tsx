@@ -1,6 +1,7 @@
 import { Btn, ImageField, Label, Select, TextArea, TextInput, UnitInput } from "./ui";
 import { GaleriaField } from "./GaleriaField";
 import { MedidasField } from "./MedidasField";
+import { AmenidadesField, CaracteristicasField } from "./ChecklistField";
 
 const IMAGEN_RE = /(imagen|portada|foto|banner|logo|icon|thumb|src|desktop|mobile)/i;
 const MAPA_RE = /^mapa$/i;
@@ -11,7 +12,7 @@ const DINERO_RE = /^(precio|precioM2|mantenimiento)$/i;
 // Opciones fijas para el campo `estatus` (par label/valor administrado como select)
 const ESTATUS_OPCIONES: Record<string, string[]> = {
   Estatus: ["Disponible", "Apartado(a)", "Vendido", "Rentado"],
-  "Estado de conservación": ["Nuevo", "Regular", "Por remodelar", "Bueno", "Excelente"],
+  "Estado de conservación": ["N/A", "Nuevo", "Regular", "Por remodelar", "Bueno", "Excelente"],
 };
 
 const TIPO_OFERTA_OPCIONES = ["Venta", "Renta", "Preventa"];
@@ -207,6 +208,19 @@ export function JsonEditor({
         onChange={(v) => onChange(v)}
       />
     );
+  }
+
+  if (nombre === "caracteristicas" && Array.isArray(value)) {
+    return (
+      <CaracteristicasField
+        value={value as { label: string; incluido: boolean }[]}
+        onChange={onChange}
+      />
+    );
+  }
+
+  if (nombre === "amenidades" && Array.isArray(value)) {
+    return <AmenidadesField value={value as string[]} onChange={onChange} />;
   }
 
   if (Array.isArray(value)) {

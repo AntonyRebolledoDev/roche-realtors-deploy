@@ -9,6 +9,7 @@ import {
 } from "@/components/wireframe/primitives";
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { DESARROLLO_DEMO, type Desarrollo } from "@/content/fichas";
+import { useDesarrollo } from "@/lib/catalogos";
 
 export const Route = createFileRoute("/desarrollos/$id")({
   head: () => ({
@@ -37,15 +38,19 @@ function Meta({ label, valor }: { label: string; valor: string }) {
 }
 
 function Micrositio() {
-  const d: Desarrollo = DESARROLLO_DEMO;
+  const { id } = Route.useParams();
+  const fila = useDesarrollo(id);
+  const d: Desarrollo = fila
+    ? ({ ...DESARROLLO_DEMO, ...(fila.data as Partial<Desarrollo>), nombre: fila.nombre } as Desarrollo)
+    : DESARROLLO_DEMO;
 
   return (
     <>
       {/* Portada / hero */}
       <section className="relative">
         <div className="relative h-[62vh] min-h-[420px] w-full overflow-hidden bg-secondary">
-          {d.portada ? (
-            <img src={d.portada} alt={d.nombre} className="h-full w-full object-cover" />
+          {d.imagen ? (
+            <img src={d.imagen} alt={d.nombre} className="h-full w-full object-cover" />
           ) : (
             <ImagePH label="PORTADA DEL DESARROLLO" height="100%" />
           )}
@@ -87,9 +92,9 @@ function Micrositio() {
         <div id="el-desarrollo" className="grid lg:grid-cols-3 gap-10 lg:gap-14">
           <div className="lg:col-span-2">
             <Reveal className="overflow-hidden rounded-3xl">
-              {d.imagenRepresentativa ? (
+              {d.imagenRepresentativa ?? d.imagen ? (
                 <img
-                  src={d.imagenRepresentativa}
+                  src={d.imagenRepresentativa ?? d.imagen}
                   alt={d.nombre}
                   className="w-full object-cover"
                   style={{ aspectRatio: "16 / 9" }}

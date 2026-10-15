@@ -1,10 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import Swal from "sweetalert2";
 import { supabase } from "@/integrations/supabase/client";
 import { JsonEditor } from "@/components/admin/JsonEditor";
 import { AdminCard, Btn, Label, TextInput, ImageField } from "@/components/admin/ui";
 import { PROPIEDADES_DEMO } from "@/content/fichas";
+
+// Tema oscuro acorde al panel de administración.
+const ALERTA_OSCURA = {
+  background: "#1A1A1A",
+  color: "#ffffff",
+} as const;
 
 export const Route = createFileRoute("/admin/propiedades")({
   component: AdminPropiedades,
@@ -41,6 +48,35 @@ type Fila = {
   data: Record<string, unknown>;
 };
 
+/**
+ * Completa con los campos de la plantilla de su categoría los que falten en
+ * una propiedad ya guardada (p. ej. si se creó antes de que la plantilla
+ * incluyera "Precio"), sin tocar los valores que ya tiene.
+ */
+function conPlantilla(f: Fila): Fila {
+  const plantilla = PROPIEDADES_DEMO[f.categoria] as Record<string, unknown> | undefined;
+  return plantilla ? { ...f, data: { ...plantilla, ...f.data } } : f;
+}
+
+/** Ruta dentro del bucket "media" a partir de una URL pública de Supabase Storage. */
+function rutaStorage(url: unknown): string | null {
+  if (typeof url !== "string") return null;
+  const marcador = "/object/public/media/";
+  const i = url.indexOf(marcador);
+  return i === -1 ? null : url.slice(i + marcador.length);
+}
+
+/** Todas las imágenes (portada + galería) referenciadas por una propiedad. */
+function imagenesDe(data: Record<string, unknown>): string[] {
+  const urls: unknown[] = [data.imagenPortada];
+  if (Array.isArray(data.galeria)) {
+    for (const g of data.galeria) {
+      if (g && typeof g === "object") urls.push((g as Record<string, unknown>).src);
+    }
+  }
+  return urls.map(rutaStorage).filter((r): r is string => !!r);
+}
+
 function AdminPropiedades() {
   const qc = useQueryClient();
   const [busqueda, setBusqueda] = useState("");
@@ -49,6 +85,7 @@ function AdminPropiedades() {
   const [edicion, setEdicion] = useState<Fila | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [eliminando, setEliminando] = useState<string | null>(null);
 
   const { data: filas } = useQuery({
     queryKey: ["admin-propiedades"],
@@ -71,6 +108,50 @@ function AdminPropiedades() {
   );
 
   const refrescar = () => qc.invalidateQueries({ queryKey: ["admin-propiedades"] });
+
+  const eliminar = async (f: Fila) => {
+    const { isConfirmed } = await Swal.fire({
+      ...ALERTA_OSCURA,
+      icon: "warning",
+      title: "¿Eliminar propiedad?",
+      text: `Esto elimina "${f.nombre}" y todas sus imágenes de forma permanente. Esta acción no se puede deshacer.`,
+      showCancelButton: true,
+      reverseButtons: true,
+      focusCancel: true,
+      confirmButtonText: "Eliminar",
+      confirmButtonColor: "#dc2626",
+      cancelButtonText: "Cancelar",
+      cancelButtonColor: "#3f3f3f",
+    });
+    if (!isConfirmed) return;
+
+    setEliminando(f.id);
+    const rutas = imagenesDe(f.data);
+    if (rutas.length) await supabase.storage.from("media").remove(rutas);
+    const { error } = await supabase.from("propiedades").delete().eq("id", f.id);
+    setEliminando(null);
+
+    if (error) {
+      Swal.fire({
+        ...ALERTA_OSCURA,
+        icon: "error",
+        title: "No se pudo eliminar",
+        text: error.message,
+        confirmButtonColor: "#C6A35A",
+      });
+      return;
+    }
+    refrescar();
+    Swal.fire({
+      ...ALERTA_OSCURA,
+      icon: "success",
+      title: "Propiedad eliminada",
+      toast: true,
+      position: "top-end",
+      timer: 2500,
+      showConfirmButton: false,
+    });
+  };
 
   const guardar = async () => {
     if (!edicion) return;
@@ -287,7 +368,7 @@ function AdminPropiedades() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Btn variant="soft" onClick={() => setEdicion(f)}>Editar</Btn>
+              <Btn variant="soft" onClick={() => setEdicion(conPlantilla(f))}>Editar</Btn>
               <Btn
                 variant="ghost"
                 onClick={async () => {
@@ -300,6 +381,16 @@ function AdminPropiedades() {
               >
                 {f.archivada ? "Restaurar" : "Archivar"}
               </Btn>
+              {f.archivada && (
+                <Btn
+                  variant="ghost"
+                  className="text-red-400 hover:text-red-300"
+                  disabled={eliminando === f.id}
+                  onClick={() => eliminar(f)}
+                >
+                  {eliminando === f.id ? "Eliminando…" : "Eliminar"}
+                </Btn>
+              )}
             </div>
           </AdminCard>
         ))}
