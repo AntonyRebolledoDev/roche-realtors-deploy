@@ -91,20 +91,24 @@ export function CaracteristicasField({
 }
 
 /**
- * Checklist precargado de amenidades a partir de `CATALOGOS.amenidadesBase`:
- * un clic agrega o quita la amenidad del arreglo guardado en la propiedad.
+ * Checklist precargado de amenidades a partir de un catálogo (por defecto
+ * `CATALOGOS.amenidadesBase`): un clic agrega o quita la amenidad del
+ * arreglo guardado.
  */
 export function AmenidadesField({
   value,
   onChange,
+  catalogo: catalogoBase = CATALOGOS.amenidadesBase,
 }: {
   value: string[];
   onChange: (v: string[]) => void;
+  /** Catálogo precargado a mostrar (por defecto, el de propiedades). */
+  catalogo?: string[];
 }) {
   const [nueva, setNueva] = useState("");
   const catalogo = [
-    ...CATALOGOS.amenidadesBase,
-    ...value.filter((v) => !CATALOGOS.amenidadesBase.includes(v)),
+    ...catalogoBase,
+    ...value.filter((v) => !catalogoBase.includes(v)),
   ];
 
   const agregar = () => {

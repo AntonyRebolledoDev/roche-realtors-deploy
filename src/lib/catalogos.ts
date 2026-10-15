@@ -202,17 +202,23 @@ export function usePropiedades(categoria?: string): FilaPropiedad[] {
   return categoria ? filas.filter((p) => p.categoria === categoria) : filas;
 }
 
-export function usePropiedad(slug: string): FilaPropiedad | null {
+/**
+ * `preview: true` omite los filtros de publicación (estado/archivada) para que
+ * el admin pueda ver cómo se vería una propiedad sin publicar todavía.
+ */
+export function usePropiedad(slug: string, opciones?: { preview?: boolean }): FilaPropiedad | null {
+  const preview = opciones?.preview ?? false;
   const { data } = useQuery({
-    queryKey: ["pub", "propiedad", slug],
+    queryKey: ["pub", "propiedad", slug, preview],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("propiedades")
         .select("id,slug,nombre,categoria,destacada,data")
-        .eq("slug", slug)
-        .eq("estado", "publicada")
-        .eq("archivada", false)
-        .maybeSingle();
+        .eq("slug", slug);
+      if (!preview) {
+        query = query.eq("estado", "publicada").eq("archivada", false);
+      }
+      const { data, error } = await query.maybeSingle();
       if (error) throw error;
       return (data ?? null) as unknown as FilaPropiedad | null;
     },
@@ -253,17 +259,23 @@ export function useDesarrollos(): FilaDesarrollo[] {
   return data ?? [];
 }
 
-export function useDesarrollo(slug: string): FilaDesarrollo | null {
+/**
+ * `preview: true` omite los filtros de publicación (estado/archivado) para que
+ * el admin pueda ver cómo se vería un desarrollo sin publicar todavía.
+ */
+export function useDesarrollo(slug: string, opciones?: { preview?: boolean }): FilaDesarrollo | null {
+  const preview = opciones?.preview ?? false;
   const { data } = useQuery({
-    queryKey: ["pub", "desarrollo", slug],
+    queryKey: ["pub", "desarrollo", slug, preview],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("desarrollos")
         .select("id,slug,nombre,destacado,data")
-        .eq("slug", slug)
-        .eq("estado", "publicado")
-        .eq("archivado", false)
-        .maybeSingle();
+        .eq("slug", slug);
+      if (!preview) {
+        query = query.eq("estado", "publicado").eq("archivado", false);
+      }
+      const { data, error } = await query.maybeSingle();
       if (error) throw error;
       return (data ?? null) as unknown as FilaDesarrollo | null;
     },

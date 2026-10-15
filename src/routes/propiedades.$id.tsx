@@ -13,6 +13,12 @@ import { Lightbox } from "@/components/wireframe/Lightbox";
 import { PROPIEDADES_DEMO, amenidadesCompletas, type Propiedad } from "@/content/fichas";
 import { usePropiedad } from "@/lib/catalogos";
 export const Route = createFileRoute("/propiedades/$id")({
+  validateSearch: (search: Record<string, unknown>): { preview?: boolean } => ({
+    preview:
+      search.preview === "1" || search.preview === 1 || search.preview === true
+        ? true
+        : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Ficha de propiedad — Roche Realtors" },
@@ -74,7 +80,8 @@ function Bloque({
 
 function Ficha() {
   const { id } = Route.useParams();
-  const fila = usePropiedad(id);
+  const { preview } = Route.useSearch();
+  const fila = usePropiedad(id, { preview });
   const desdeUrl = VARIANTES.find((v) => id.startsWith(v.key))?.key ?? "casa";
   const [variante, setVariante] = useState(desdeUrl);
   const demo: Propiedad = PROPIEDADES_DEMO[variante] ?? PROPIEDADES_DEMO["casa"]!;
@@ -97,6 +104,11 @@ function Ficha() {
 
   return (
     <>
+      {preview && fila && (
+        <div className="bg-gold px-5 py-2 text-center text-[11px] uppercase tracking-[0.18em] text-ink">
+          Vista previa — así se vería esta propiedad en el sitio
+        </div>
+      )}
       <div className="mx-auto max-w-7xl px-5 md:px-8 pt-8">
         <Breadcrumb items={["Inicio", "Propiedades", p.nombre]} />
       </div>
@@ -190,7 +202,7 @@ function Ficha() {
 
           <Reveal delay={140}>
             <aside className="lg:sticky lg:top-28 rounded-3xl border border-border bg-card p-7 space-y-4">
-              {p.precio && (
+              {p.precio && p.precioMostrar !== "precioM2" && (
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
                     Precio
@@ -198,7 +210,14 @@ function Ficha() {
                   <div className="mt-1 text-3xl font-semibold tracking-tight">{p.precio}</div>
                 </div>
               )}
-              {p.precioM2 && <Dato label="Precio por m²" valor={p.precioM2} />}
+              {p.precioM2 && p.precioMostrar === "precioM2" && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+                    Precio por m²
+                  </div>
+                  <div className="mt-1 text-3xl font-semibold tracking-tight">{p.precioM2}</div>
+                </div>
+              )}
               {p.mantenimiento && <Dato label="Mantenimiento mensual" valor={p.mantenimiento} />}
               {p.disponibilidad && <Dato label="Disponibilidad" valor={p.disponibilidad} />}
               {p.desarrollo && <Dato label="Desarrollo" valor={p.desarrollo} />}

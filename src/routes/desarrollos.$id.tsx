@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Breadcrumb,
   BtnPH,
@@ -8,10 +9,17 @@ import {
   SectionHeader,
 } from "@/components/wireframe/primitives";
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
-import { DESARROLLO_DEMO, type Desarrollo } from "@/content/fichas";
+import { Lightbox } from "@/components/wireframe/Lightbox";
+import { DESARROLLO_DEMO, textoPrecioDesde, type Desarrollo } from "@/content/fichas";
 import { useDesarrollo } from "@/lib/catalogos";
 
 export const Route = createFileRoute("/desarrollos/$id")({
+  validateSearch: (search: Record<string, unknown>): { preview?: boolean } => ({
+    preview:
+      search.preview === "1" || search.preview === 1 || search.preview === true
+        ? true
+        : undefined,
+  }),
   head: () => ({
     meta: [
       { title: `${DESARROLLO_DEMO.nombre} — Desarrollos · Roche Realtors` },
@@ -39,13 +47,21 @@ function Meta({ label, valor }: { label: string; valor: string }) {
 
 function Micrositio() {
   const { id } = Route.useParams();
-  const fila = useDesarrollo(id);
+  const { preview } = Route.useSearch();
+  const fila = useDesarrollo(id, { preview });
   const d: Desarrollo = fila
     ? ({ ...DESARROLLO_DEMO, ...(fila.data as Partial<Desarrollo>), nombre: fila.nombre } as Desarrollo)
     : DESARROLLO_DEMO;
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const desdeTexto = textoPrecioDesde(d.desde);
 
   return (
     <>
+      {preview && fila && (
+        <div className="bg-gold px-5 py-2 text-center text-[11px] uppercase tracking-[0.18em] text-ink">
+          Vista previa — así se vería este desarrollo en el sitio
+        </div>
+      )}
       {/* Portada / hero */}
       <section className="relative">
         <div className="relative h-[62vh] min-h-[420px] w-full overflow-hidden bg-secondary">
@@ -67,9 +83,9 @@ function Micrositio() {
                 <p className="mt-4 text-sm md:text-base leading-relaxed opacity-90">
                   {d.descripcionCorta}
                 </p>
-                {d.desde && (
+                {desdeTexto && (
                   <div className="mt-5 text-lg font-medium">
-                    Desde <span className="text-gold">{d.desde}</span>
+                    Desde <span className="text-gold">{desdeTexto}</span>
                   </div>
                 )}
                 <div className="mt-7">
@@ -104,7 +120,9 @@ function Micrositio() {
               )}
             </Reveal>
             <Reveal delay={80} className="mt-8">
-              <h2 className="subsection-title font-semibold tracking-tight">El desarrollo</h2>
+              <h2 className="subsection-title font-semibold tracking-tight">
+                {d.tituloSeccionDesarrollo || "El desarrollo"}
+              </h2>
               <div className="mt-5 space-y-5">
                 {d.descripcionGeneral.map((p, i) => (
                   <p key={i} className="text-base leading-8 text-muted-foreground whitespace-pre-line">
@@ -121,7 +139,7 @@ function Micrositio() {
               <Meta label="Tipo de operación" valor={d.tipoOperacion} />
               <Meta label="Ubicación" valor={d.ubicacion} />
               <Meta label="Disponibilidad" valor={d.disponibilidad} />
-              {d.desde && <Meta label="Precio desde" valor={d.desde} />}
+              {desdeTexto && <Meta label="Precio desde" valor={desdeTexto} />}
               <div className="pt-2">
                 <Link to="/contacto">
                   <BtnPH label="Contactar un asesor" size="lg" />
@@ -138,7 +156,7 @@ function Micrositio() {
           <SectionHeader eyebrow="Oferta" title="Tipos de producto disponibles" />
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {d.ofertas.map((o, i) => (
-              <Reveal key={o.tipo} delay={i * 80}>
+              <Reveal key={`${o.tipo}-${i}`} delay={i * 80}>
                 <div className="rounded-3xl border border-border bg-card p-8 hover-lift">
                   <div className="text-lg font-medium tracking-tight">{o.tipo}</div>
                   <div className="mt-3 gold-rule" style={{ background: "var(--gold)" }} />
@@ -175,7 +193,12 @@ function Micrositio() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {d.galeria.map((g, i) => (
               <Reveal key={g.alt} delay={(i % 3) * 80}>
-                <div className="overflow-hidden rounded-3xl">
+                <button
+                  type="button"
+                  className="block w-full overflow-hidden rounded-3xl text-left"
+                  onClick={() => setLightboxIndex(i)}
+                  aria-label={`Ver imagen ${i + 1} en grande`}
+                >
                   {g.src ? (
                     <img
                       src={g.src}
@@ -187,7 +210,7 @@ function Micrositio() {
                   ) : (
                     <ImagePH label={g.alt} aspect="4 / 3" />
                   )}
-                </div>
+                </button>
               </Reveal>
             ))}
           </div>
@@ -250,6 +273,15 @@ function Micrositio() {
       )}
 
       <AgendaCita />
+
+      {lightboxIndex !== null && (
+        <Lightbox
+          imagenes={d.galeria}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
+      )}
     </>
   );
 }

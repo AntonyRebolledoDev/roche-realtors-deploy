@@ -371,6 +371,12 @@ function AdminPropiedades() {
               <Btn variant="soft" onClick={() => setEdicion(conPlantilla(f))}>Editar</Btn>
               <Btn
                 variant="ghost"
+                onClick={() => window.open(`/propiedades/${f.slug}?preview=1`, "_blank")}
+              >
+                Vista previa
+              </Btn>
+              <Btn
+                variant="ghost"
                 onClick={async () => {
                   await supabase
                     .from("propiedades")

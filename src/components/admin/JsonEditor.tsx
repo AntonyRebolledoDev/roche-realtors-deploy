@@ -2,12 +2,13 @@ import { Btn, ImageField, Label, Select, TextArea, TextInput, UnitInput } from "
 import { GaleriaField } from "./GaleriaField";
 import { MedidasField } from "./MedidasField";
 import { AmenidadesField, CaracteristicasField } from "./ChecklistField";
+import { CATALOGOS, type FormatoPrecio, type PrecioDesde } from "@/content/fichas";
 
 const IMAGEN_RE = /(imagen|portada|foto|banner|logo|icon|thumb|src|desktop|mobile)/i;
 const MAPA_RE = /^mapa$/i;
 const LARGO_RE = /(texto|descripcion|parrafo|resumen|nota|contenido|bio|intro|cuerpo|desc)/i;
 // Montos en pesos: se escriben solo los dígitos, "$" y "MXN" se agregan solos.
-const DINERO_RE = /^(precio|precioM2|mantenimiento)$/i;
+const DINERO_RE = /^(precio|precioM2|mantenimiento|desde)$/i;
 
 // Opciones fijas para el campo `estatus` (par label/valor administrado como select)
 const ESTATUS_OPCIONES: Record<string, string[]> = {
@@ -19,6 +20,8 @@ const TIPO_OFERTA_OPCIONES = ["Venta", "Renta", "Preventa"];
 
 // Etiquetas legibles alineadas con los títulos de la página pública
 const LABEL_MAP: Record<string, string> = {
+  tituloSeccionDesarrollo: "Título de la sección “El desarrollo”",
+  ofertas: "Tipo de producto",
   // Mercado — secciones (coinciden con los títulos de /inteligencia-de-mercado)
   etiquetas: "Títulos de sección (página pública)",
   kpisHorizontal: "KPIs — Vivienda horizontal",
@@ -67,6 +70,7 @@ export function JsonEditor({
   nombre,
   nivel = 0,
   ocultar = [],
+  catalogoAmenidades,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
@@ -74,6 +78,8 @@ export function JsonEditor({
   nivel?: number;
   /** Claves del nivel superior que ya se editan con un campo dedicado fuera de este editor. */
   ocultar?: string[];
+  /** Catálogo precargado para el checklist de amenidades (por defecto, el de propiedades). */
+  catalogoAmenidades?: string[];
 }) {
   if (typeof value === "boolean") {
     return (
@@ -139,6 +145,32 @@ export function JsonEditor({
                 {o}
               </option>
             ))}
+          </Select>
+        </div>
+      );
+    }
+    if (key === "tipo") {
+      return (
+        <div>
+          <Label>Tipo de producto</Label>
+          <Select value={v} onChange={(e) => onChange(e.target.value)}>
+            {!CATALOGOS.tipoProductoDesarrollo.includes(v) && <option value="">— Seleccionar —</option>}
+            {CATALOGOS.tipoProductoDesarrollo.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </Select>
+        </div>
+      );
+    }
+    if (key === "precioMostrar") {
+      return (
+        <div>
+          <Label>Precio a mostrar en la tarjeta</Label>
+          <Select value={v} onChange={(e) => onChange(e.target.value)}>
+            <option value="precio">Precio total</option>
+            <option value="precioM2">Precio por m²</option>
           </Select>
         </div>
       );
@@ -220,7 +252,9 @@ export function JsonEditor({
   }
 
   if (nombre === "amenidades" && Array.isArray(value)) {
-    return <AmenidadesField value={value as string[]} onChange={onChange} />;
+    return (
+      <AmenidadesField value={value as string[]} onChange={onChange} catalogo={catalogoAmenidades} />
+    );
   }
 
   if (Array.isArray(value)) {
@@ -278,6 +312,7 @@ export function JsonEditor({
             <JsonEditor
               value={itemCompleto}
               nivel={nivel + 1}
+              catalogoAmenidades={catalogoAmenidades}
               onChange={(v) => {
                 const next = [...value];
                 next[i] = v;
@@ -294,6 +329,34 @@ export function JsonEditor({
         >
           Añadir elemento
         </Btn>
+      </div>
+    );
+  }
+
+  if (nombre === "desde" && value && typeof value === "object" && !Array.isArray(value)) {
+    const v = value as Partial<PrecioDesde>;
+    const formato: FormatoPrecio = v.formato === "m2" ? "m2" : "total";
+    const sufijo = formato === "m2" ? "MXN x m²" : "MXN";
+    return (
+      <div className="space-y-3">
+        <Label>Desde</Label>
+        <Select
+          value={formato}
+          onChange={(e) => onChange({ ...v, formato: e.target.value as FormatoPrecio })}
+        >
+          <option value="total">Precio total</option>
+          <option value="m2">$ x m²</option>
+        </Select>
+        <div className="flex items-stretch rounded-md border border-white/15 bg-black/40 focus-within:border-gold">
+          <span className="flex items-center pl-3 text-sm text-white/40">$</span>
+          <input
+            value={v.monto ?? ""}
+            placeholder="0"
+            onChange={(e) => onChange({ ...v, monto: e.target.value })}
+            className="w-full bg-transparent px-2 py-2 text-sm text-white outline-hidden"
+          />
+          <span className="flex items-center pr-3 text-sm text-white/40">{sufijo}</span>
+        </div>
       </div>
     );
   }
@@ -321,6 +384,7 @@ export function JsonEditor({
             value={v}
             nombre={k}
             nivel={nivel + 1}
+            catalogoAmenidades={catalogoAmenidades}
             onChange={(nv) => onChange({ ...(value as object), [k]: nv })}
           />
         </div>

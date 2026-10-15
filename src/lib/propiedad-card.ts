@@ -33,6 +33,14 @@ export function fichaDeFila(f: FilaPropiedad): FichaPropiedadCard {
     .filter(Boolean)
     .join(" · ");
 
+  // Terrenos residenciales y macrolotes permiten elegir, por ficha, si la
+  // tarjeta pública muestra el precio total o el precio por m².
+  const esTerreno = d.categoria === "Terreno residencial" || d.categoria === "Terreno macrolote";
+  const precio =
+    esTerreno && d.precioMostrar === "precioM2" && d.precioM2
+      ? `${d.precioM2} POR M²`
+      : d.precio || "";
+
   return {
     slug: f.slug,
     nombre: d.nombre || f.nombre,
@@ -41,6 +49,6 @@ export function fichaDeFila(f: FilaPropiedad): FichaPropiedadCard {
     imagen: sanitizeImg((d as Record<string, unknown>).imagenPortada as string) ?? sanitizeImg(d.galeria?.find((g) => g?.src)?.src),
     zona: d.desarrollo || d.zonaAbierta || "",
     detalle,
-    precio: d.precio || "",
+    precio,
   };
 }

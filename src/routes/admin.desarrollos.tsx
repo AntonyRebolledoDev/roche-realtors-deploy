@@ -1,10 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import Swal from "sweetalert2";
 import { supabase } from "@/integrations/supabase/client";
 import { JsonEditor } from "@/components/admin/JsonEditor";
-import { AdminCard, Btn, Label, TextInput, ImageField } from "@/components/admin/ui";
-import { DESARROLLO_DEMO } from "@/content/fichas";
+import { AdminCard, Btn, Label, Select, TextInput, ImageField } from "@/components/admin/ui";
+import { CATALOGOS, DESARROLLO_DEMO } from "@/content/fichas";
+
+/** Campos del nivel superior que ya se editan con un select dedicado fuera del editor genérico. */
+const OCULTAR_DEL_EDITOR = ["nombre", "tipoDesarrollo", "tipoOperacion", "disponibilidad"];
+
+// Tema oscuro acorde al panel de administraci\u00f3n.
+const ALERTA_OSCURA = {
+  background: "#1A1A1A",
+  color: "#ffffff",
+} as const;
 
 export const Route = createFileRoute("/admin/desarrollos")({
   component: AdminDesarrollos,
@@ -31,6 +41,41 @@ type Fila = {
   data: Record<string, unknown>;
 };
 
+/**
+ * Completa con los campos de la plantilla los que falten en un desarrollo ya
+ * guardado (p. ej. si se cre\u00f3 antes de que existiera un campo nuevo), sin
+ * tocar los valores que ya tiene.
+ */
+function conPlantilla(f: Fila): Fila {
+  const data: Record<string, unknown> = { ...DESARROLLO_DEMO, ...f.data };
+  // Fichas guardadas antes de que "desde" tuviera selector de formato
+  // traían un texto libre (p. ej. "$2,450,000 MXN"); se adapta a la nueva
+  // forma {monto, formato} para que el selector funcione sin perder el dato.
+  if (typeof data.desde === "string") {
+    data.desde = { monto: data.desde.replace(/[^0-9.,]/g, ""), formato: "total" };
+  }
+  return { ...f, data };
+}
+
+/** Ruta dentro del bucket "media" a partir de una URL p\u00fablica de Supabase Storage. */
+function rutaStorage(url: unknown): string | null {
+  if (typeof url !== "string") return null;
+  const marcador = "/object/public/media/";
+  const i = url.indexOf(marcador);
+  return i === -1 ? null : url.slice(i + marcador.length);
+}
+
+/** Todas las im\u00e1genes (portada, representativa, master plan y galer\u00eda) de un desarrollo. */
+function imagenesDe(data: Record<string, unknown>): string[] {
+  const urls: unknown[] = [data.imagen, data.imagenRepresentativa, data.masterPlan];
+  if (Array.isArray(data.galeria)) {
+    for (const g of data.galeria) {
+      if (g && typeof g === "object") urls.push((g as Record<string, unknown>).src);
+    }
+  }
+  return urls.map(rutaStorage).filter((r): r is string => !!r);
+}
+
 function AdminDesarrollos() {
   const qc = useQueryClient();
   const [busqueda, setBusqueda] = useState("");
@@ -38,6 +83,7 @@ function AdminDesarrollos() {
   const [edicion, setEdicion] = useState<Fila | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [eliminando, setEliminando] = useState<string | null>(null);
 
   const { data: filas } = useQuery({
     queryKey: ["admin-desarrollos"],
@@ -52,6 +98,50 @@ function AdminDesarrollos() {
     (f) => f.archivado === verArchivados && f.nombre.toLowerCase().includes(busqueda.toLowerCase()),
   );
   const refrescar = () => qc.invalidateQueries({ queryKey: ["admin-desarrollos"] });
+
+  const eliminar = async (f: Fila) => {
+    const { isConfirmed } = await Swal.fire({
+      ...ALERTA_OSCURA,
+      icon: "warning",
+      title: "¿Eliminar desarrollo?",
+      text: `Esto elimina "${f.nombre}" y todas sus imágenes de forma permanente. Esta acción no se puede deshacer.`,
+      showCancelButton: true,
+      reverseButtons: true,
+      focusCancel: true,
+      confirmButtonText: "Eliminar",
+      confirmButtonColor: "#dc2626",
+      cancelButtonText: "Cancelar",
+      cancelButtonColor: "#3f3f3f",
+    });
+    if (!isConfirmed) return;
+
+    setEliminando(f.id);
+    const rutas = imagenesDe(f.data);
+    if (rutas.length) await supabase.storage.from("media").remove(rutas);
+    const { error } = await supabase.from("desarrollos").delete().eq("id", f.id);
+    setEliminando(null);
+
+    if (error) {
+      Swal.fire({
+        ...ALERTA_OSCURA,
+        icon: "error",
+        title: "No se pudo eliminar",
+        text: error.message,
+        confirmButtonColor: "#C6A35A",
+      });
+      return;
+    }
+    refrescar();
+    Swal.fire({
+      ...ALERTA_OSCURA,
+      icon: "success",
+      title: "Desarrollo eliminado",
+      toast: true,
+      position: "top-end",
+      timer: 2500,
+      showConfirmButton: false,
+    });
+  };
 
   const guardar = async () => {
     if (!edicion) return;
@@ -141,6 +231,65 @@ function AdminDesarrollos() {
           </label>
         </AdminCard>
 
+        <AdminCard className="mt-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <Label>Tipo de desarrollo</Label>
+              <Select
+                value={(edicion.data.tipoDesarrollo as string) ?? ""}
+                onChange={(e) =>
+                  setEdicion({ ...edicion, data: { ...edicion.data, tipoDesarrollo: e.target.value } })
+                }
+              >
+                {!CATALOGOS.tipoDesarrollo.includes(edicion.data.tipoDesarrollo as string) && (
+                  <option value="">— Seleccionar —</option>
+                )}
+                {CATALOGOS.tipoDesarrollo.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>Tipo de operación</Label>
+              <Select
+                value={(edicion.data.tipoOperacion as string) ?? ""}
+                onChange={(e) =>
+                  setEdicion({ ...edicion, data: { ...edicion.data, tipoOperacion: e.target.value } })
+                }
+              >
+                {!CATALOGOS.tipoOperacion.includes(edicion.data.tipoOperacion as string) && (
+                  <option value="">— Seleccionar —</option>
+                )}
+                {CATALOGOS.tipoOperacion.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>Disponibilidad</Label>
+              <Select
+                value={(edicion.data.disponibilidad as string) ?? ""}
+                onChange={(e) =>
+                  setEdicion({ ...edicion, data: { ...edicion.data, disponibilidad: e.target.value } })
+                }
+              >
+                {!CATALOGOS.disponibilidadDesarrollo.includes(edicion.data.disponibilidad as string) && (
+                  <option value="">— Seleccionar —</option>
+                )}
+                {CATALOGOS.disponibilidadDesarrollo.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+        </AdminCard>
+
         <AdminCard className="mt-6 space-y-2">
           <Label>Imagen de portada</Label>
           <ImageField
@@ -171,7 +320,8 @@ function AdminDesarrollos() {
           <JsonEditor
             value={edicion.data}
             onChange={(v) => setEdicion({ ...edicion, data: v as Record<string, unknown> })}
-            ocultar={["nombre"]}
+            ocultar={OCULTAR_DEL_EDITOR}
+            catalogoAmenidades={CATALOGOS.amenidadesDesarrollo}
           />
         </div>
       </div>
@@ -230,7 +380,13 @@ function AdminDesarrollos() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Btn variant="soft" onClick={() => setEdicion(f)}>Editar</Btn>
+              <Btn variant="soft" onClick={() => setEdicion(conPlantilla(f))}>Editar</Btn>
+              <Btn
+                variant="ghost"
+                onClick={() => window.open(`/desarrollos/${f.slug}?preview=1`, "_blank")}
+              >
+                Vista previa
+              </Btn>
               <Btn
                 variant="ghost"
                 onClick={async () => {
@@ -243,6 +399,16 @@ function AdminDesarrollos() {
               >
                 {f.archivado ? "Restaurar" : "Archivar"}
               </Btn>
+              {f.archivado && (
+                <Btn
+                  variant="ghost"
+                  className="text-red-400 hover:text-red-300"
+                  disabled={eliminando === f.id}
+                  onClick={() => eliminar(f)}
+                >
+                  {eliminando === f.id ? "Eliminando…" : "Eliminar"}
+                </Btn>
+              )}
             </div>
           </AdminCard>
         ))}

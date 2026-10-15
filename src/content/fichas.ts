@@ -5,8 +5,10 @@
 export type Opcion = string;
 
 export const CATALOGOS = {
-  tipoDesarrollo: ["Residencial", "Comercial", "Logístico/Industrial"],
-  tipoOperacion: ["Venta", "Preventa", "Renta"],
+  tipoDesarrollo: ["Residencial", "Comercial", "Mixto", "Industrial"],
+  tipoOperacion: ["Compra", "Venta", "Preventa", "Renta", "Aportación"],
+  tipoProductoDesarrollo: ["Casa", "Departamento", "Terreno", "Comercial / Industrial"],
+  disponibilidadDesarrollo: ["Disponible", "Apartado(a)", "Vendido", "Rentado"],
   tipoOferta: ["Casas", "Villas", "Departamentos", "Terrenos residenciales", "Macrolotes"],
   tipoPropiedad: ["Casa", "Departamento", "Terreno residencial", "Terreno macrolote"],
   subtipoDepartamento: ["Estudio", "Departamento", "Pent Garden", "Pent House"],
@@ -29,18 +31,71 @@ export const CATALOGOS = {
     "Áreas verdes",
     "Ciclovía",
   ],
+  /** Checklist precargado de amenidades para desarrollos (distinto del de propiedades). */
+  amenidadesDesarrollo: [
+    "Acceso a la playa",
+    "Balcón",
+    "Cisterna",
+    "Estacionamiento techado",
+    "Frente al mar",
+    "Jardín",
+    "Garage",
+    "Riego por aspersión",
+    "Roof top",
+    "Terraza",
+    "Vista al mar",
+    "Aire acondicionado",
+    "Amueblado",
+    "Bodega",
+    "Circuito Cerrado",
+    "Clóset vestidor",
+    "Cocina equipada",
+    "Cuarto de servicio",
+    "Elevador",
+    "Fraccionamiento privado",
+    "Hidroneumático",
+    "Paneles solares",
+    "Planta eléctrica",
+    "Recámara en planta baja",
+    "Seguridad 24 horas",
+    "Alberca",
+    "Juegos infantiles",
+    "Cancha de pádel",
+    "Cancha de tenis",
+    "Cine",
+    "Fogatero",
+    "Gimnasio",
+    "Jacuzzi",
+    "Salón de usos múltiples",
+    "Sauna",
+  ],
 };
 
 export type Galeria = { src?: string; alt: string }[];
+
+/** Formato del precio "Desde": precio total o precio por m². */
+export type FormatoPrecio = "total" | "m2";
+export type PrecioDesde = { monto: string; formato: FormatoPrecio };
+
+/** Da formato a un precio "Desde" ("$..... MXN" o "$..... MXN x m²"). Acepta
+ * también el formato legado (texto libre) para no romper fichas ya guardadas. */
+export function textoPrecioDesde(p?: PrecioDesde | string | null): string {
+  if (!p) return "";
+  if (typeof p === "string") return p;
+  if (!p.monto) return "";
+  return `$${p.monto} MXN${p.formato === "m2" ? " x m²" : ""}`;
+}
 
 export type Desarrollo = {
   nombre: string;
   tipoDesarrollo: Opcion;
   tipoOperacion: Opcion;
   descripcionCorta: string;
-  desde?: string;
+  desde?: PrecioDesde;
   imagen?: string;
   imagenRepresentativa?: string;
+  /** Encabezado sobre la descripción general (p. ej. "El desarrollo"). */
+  tituloSeccionDesarrollo?: string;
   descripcionGeneral: string[];
   masterPlan?: string;
   galeria: Galeria;
@@ -58,7 +113,8 @@ export const DESARROLLO_DEMO: Desarrollo = {
   tipoOperacion: "Preventa",
   descripcionCorta:
     "Comunidad planeada al norte de Mérida, con amenidades, áreas verdes y accesos controlados.",
-  desde: "$2,450,000 MXN",
+  desde: { monto: "2,450,000", formato: "total" },
+  tituloSeccionDesarrollo: "El desarrollo",
   descripcionGeneral: [
     "Un desarrollo concebido para la vida contemporánea en Yucatán: trazo abierto, vegetación nativa y una arquitectura sobria que privilegia la luz y la ventilación natural.",
     "Cada etapa integra vialidades internas, andadores y espacios comunes pensados para el encuentro y el descanso.",
@@ -72,13 +128,13 @@ export const DESARROLLO_DEMO: Desarrollo = {
     { alt: "Vialidades internas" },
   ],
   ofertas: [
-    { tipo: "Casas", desde: "$3,900,000 MXN" },
-    { tipo: "Terrenos residenciales", desde: "$2,450,000 MXN" },
-    { tipo: "Macrolotes", desde: "$12,000,000 MXN" },
+    { tipo: "Casa", desde: "$3,900,000 MXN" },
+    { tipo: "Terreno", desde: "$2,450,000 MXN" },
+    { tipo: "Departamento", desde: "$12,000,000 MXN" },
   ],
-  disponibilidad: "Entrega inmediata",
+  disponibilidad: "Disponible",
   ubicacion: "Zona norte · Mérida, Yucatán",
-  amenidades: ["Casa club", "Alberca", "Gimnasio", "Pet park", "Cancha de pádel", "Seguridad 24/7"],
+  amenidades: ["Alberca", "Gimnasio", "Roof top", "Jardín", "Seguridad 24 horas", "Cancha de pádel"],
   desarrollador: {
     nombre: "Nombre del desarrollador",
     texto: [
@@ -107,6 +163,8 @@ export type Propiedad = {
   disponibilidad?: string;
   precio?: string;
   precioM2?: string;
+  /** Qué precio mostrar en la tarjeta pública (solo terrenos/macrolotes). */
+  precioMostrar?: "precio" | "precioM2";
   mantenimiento?: string;
   medidas?: [string, string][];
   distribucion?: [string, string][];
@@ -242,6 +300,7 @@ export const PROPIEDADES_DEMO: Record<string, Propiedad> = {
     disponibilidad: "Entrega inmediata",
     precio: "$3,200,000 MXN",
     precioM2: "$8,000 MXN",
+    precioMostrar: "precio",
     mantenimiento: "$1,800 MXN",
     medidas: [
       ["Ubicación", "Privada"],
@@ -277,6 +336,7 @@ export const PROPIEDADES_DEMO: Record<string, Propiedad> = {
     disponibilidad: "Entrega inmediata",
     precio: "$12,000,000 MXN",
     precioM2: "$1,200 MXN",
+    precioMostrar: "precio",
     mantenimiento: "$3,500 MXN",
     medidas: [
       ["Ubicación", "Avenida"],
