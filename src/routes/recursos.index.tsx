@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   Breadcrumb,
   BtnPH,
@@ -7,9 +7,10 @@ import {
   SectionBand,
   SectionHeader,
   Tab,
+  YtThumb,
 } from "@/components/wireframe/primitives";
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
-import { CATEGORIAS_RECURSOS, ytThumb, ytThumbFallback } from "@/content/textos";
+import { CATEGORIAS_RECURSOS } from "@/content/textos";
 import { useArticulos, useEstiloVida, useVideos } from "@/lib/catalogos";
 import { useSiteContent } from "@/lib/site-content";
 
@@ -25,40 +26,73 @@ export const Route = createFileRoute("/recursos/")({
   component: Recursos,
 });
 
-function YtThumb({
-  id,
-  alt,
-  className,
-  style,
-}: {
-  id: string;
-  alt: string;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  const [src, setSrc] = useState(ytThumb(id));
-  const triedFallback = useRef(false);
+// Tarjeta genérica que mezcla artículos (ruta interna) y videos de
+// Termómetro (enlace externo a YouTube) en un mismo listado — p. ej. en
+// la pestaña "Todos".
+type RecursoListItem = {
+  key: string;
+  categoria: string;
+  titulo: string;
+  resumen: string;
+  fecha?: string;
+  imagen?: string;
+  videoId?: string;
+  href: { tipo: "interno"; slug: string } | { tipo: "externo"; url: string };
+};
 
-  return (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      className={className}
-      style={style}
-      onError={() => {
-        if (!triedFallback.current) {
-          triedFallback.current = true;
-          setSrc(ytThumbFallback(id));
-        }
-      }}
-      onLoad={(e) => {
-        if (!triedFallback.current && e.currentTarget.naturalWidth < 480) {
-          triedFallback.current = true;
-          setSrc(ytThumbFallback(id));
-        }
-      }}
-    />
+function RecursoCard({ item }: { item: RecursoListItem }) {
+  const contenido = (
+    <>
+      <div className="relative">
+        {item.videoId ? (
+          <YtThumb
+            id={item.videoId}
+            alt={item.titulo}
+            className="w-full object-cover"
+            style={{ aspectRatio: "16 / 9" }}
+          />
+        ) : item.imagen ? (
+          <img
+            src={item.imagen}
+            alt={item.titulo}
+            loading="lazy"
+            className="w-full object-cover"
+            style={{ aspectRatio: "16 / 9" }}
+          />
+        ) : (
+          <ImagePH label="IMAGEN" aspect="16 / 9" />
+        )}
+        {item.videoId && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="w-12 h-12 rounded-full border-2 border-foreground bg-ink/70 flex items-center justify-center text-xl transition-transform group-hover:scale-110">
+              ▶
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="p-4 space-y-2 flex-1 flex flex-col">
+        <span className="card-label">{item.categoria}</span>
+        <div className="text-sm font-semibold text-foreground">{item.titulo}</div>
+        <p className="text-xs leading-relaxed text-foreground flex-1">{item.resumen}</p>
+        <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+          <span>{item.fecha ?? ""}</span>
+          <span className="underline">{item.videoId ? "Ver video" : "Leer más"}</span>
+        </div>
+      </div>
+    </>
+  );
+
+  const className =
+    "group border border-border bg-card flex flex-col rounded-3xl overflow-hidden";
+
+  return item.href.tipo === "interno" ? (
+    <Link to="/recursos/$slug" params={{ slug: item.href.slug }} className={className}>
+      {contenido}
+    </Link>
+  ) : (
+    <a href={item.href.url} target="_blank" rel="noopener" className={className}>
+      {contenido}
+    </a>
   );
 }
 
@@ -69,8 +103,29 @@ function Recursos() {
   const estiloVida = useEstiloVida();
   const [active, setActive] = useState("Todos");
   const ultimoVideo = videos[0];
+
+  const articuloItems: RecursoListItem[] = articulos.map((a) => ({
+    key: a.slug,
+    categoria: a.categoria,
+    titulo: a.titulo,
+    resumen: a.entradilla,
+    fecha: a.fecha,
+    imagen: a.imagen,
+    href: { tipo: "interno", slug: a.slug },
+  }));
+  const videoItems: RecursoListItem[] = videos.map((v) => ({
+    key: `video-${v.id}`,
+    categoria: "Termómetro Inmobiliario",
+    titulo: v.titulo,
+    resumen: `Duración ${v.duracion}`,
+    fecha: v.fecha,
+    videoId: v.id,
+    href: { tipo: "externo", url: v.url },
+  }));
   const lista =
-    active === "Todos" ? articulos : articulos.filter((a) => a.categoria === active);
+    active === "Todos"
+      ? [...videoItems, ...articuloItems]
+      : articuloItems.filter((a) => a.categoria === active);
 
   return (
     <>
@@ -217,48 +272,40 @@ function Recursos() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {lista.map((a) => (
-              <Link
-                key={a.slug}
-                to="/recursos/$slug"
-                params={{ slug: a.slug }}
-                className="border border-border bg-card flex flex-col rounded-3xl overflow-hidden"
-              >
-                {a.imagen ? (
-                  <img
-                    src={a.imagen}
-                    alt={a.titulo}
-                    loading="lazy"
-                    className="w-full object-cover"
-                    style={{ aspectRatio: "16 / 9" }}
-                  />
-                ) : (
-                  <ImagePH label="IMAGEN" aspect="16 / 9" />
-                )}
-                <div className="p-4 space-y-2 flex-1 flex flex-col">
-                  <span className="card-label">{a.categoria}</span>
-                  <div className="text-sm font-semibold text-foreground">{a.titulo}</div>
-                  <p className="text-xs leading-relaxed text-foreground flex-1">{a.entradilla}</p>
-                  <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
-                    <span>DD MMM AAAA</span>
-                    <span className="underline">Leer más</span>
-                  </div>
-                </div>
-              </Link>
+            {lista.map((item) => (
+              <RecursoCard key={item.key} item={item} />
             ))}
           </div>
         )}
-
-        {/* Paginación */}
-        <div className="mt-8 flex flex-col items-center gap-3">
-          <BtnPH label="Ver más recursos" />
-          <div className="text-xs text-muted-foreground flex gap-3">
-            <span>‹</span><span className="underline">1</span><span>2</span><span>3</span><span>›</span>
-          </div>
-        </div>
       </SectionBand>
       )}
 
+      {/* Preguntas frecuentes */}
+      <SectionBand bg="gray">
+        <SectionHeader title={c.faqTitulo} intro={c.faqIntro} />
+        <div className="space-y-10" id="faq">
+          {c.faq.map((g) => (
+            <div key={g.tema}>
+              <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                {g.tema}
+              </h3>
+              <div className="rounded-3xl overflow-hidden border border-border bg-card divide-y divide-border">
+                {g.items.map((f, i) => (
+                  <details key={i} className="group">
+                    <summary className="cursor-pointer p-5 flex items-center justify-between gap-4 text-sm font-semibold">
+                      <span>{f.q}</span>
+                      <span className="text-muted-foreground group-open:rotate-45 transition-transform">
+                        +
+                      </span>
+                    </summary>
+                    <div className="px-5 pb-5 text-sm leading-7 text-foreground">{f.a}</div>
+                  </details>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </SectionBand>
 
       {/* Agenda una cita (CTA global) */}
       <AgendaCita />

@@ -138,34 +138,7 @@ function Empresa() {
         </div>
       </SectionBand>
 
-      {/* 6. FAQ */}
-      <SectionBand bg="gray">
-        <SectionHeader title={c.faqTitulo} intro={c.faqIntro} />
-        <div className="space-y-10" id="faq">
-          {c.faq.map((g) => (
-            <div key={g.tema}>
-              <h3 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">
-                {g.tema}
-              </h3>
-              <div className="rounded-3xl overflow-hidden border border-border bg-card divide-y divide-border">
-                {g.items.map((f, i) => (
-                  <details key={i} className="group">
-                    <summary className="cursor-pointer p-5 flex items-center justify-between gap-4 text-sm font-semibold">
-                      <span>{f.q}</span>
-                      <span className="text-muted-foreground group-open:rotate-45 transition-transform">
-                        +
-                      </span>
-                    </summary>
-                    <div className="px-5 pb-5 text-sm leading-7 text-foreground">{f.a}</div>
-                  </details>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </SectionBand>
-
-      {/* 7. Agenda una cita (CTA global) */}
+      {/* 6. Agenda una cita (CTA global) */}
       <AgendaCita />
     </>
   );

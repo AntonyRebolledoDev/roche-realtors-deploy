@@ -29,6 +29,7 @@ const tooltipStyle = {
     fontSize: 12,
   },
   labelStyle: { color: "var(--foreground)", fontWeight: 600 },
+  itemStyle: { color: "var(--foreground)" },
 };
 
 const money = (v: number) => `$${v.toLocaleString("es-MX")}`;

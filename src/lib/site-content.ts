@@ -172,11 +172,18 @@ export const CONTENT_DEFAULTS = {
       titulo: "Propiedades destacadas",
       intro: "Selección curada por nuestro equipo.",
       textoBoton: "Ver todas las propiedades",
+      // Cuántas propiedades marcadas como destacada se muestran en Inicio.
+      // El orden entre ellas lo determina el campo "Orden" de cada propiedad
+      // (el mismo que ordena el catálogo de Propiedades). Tope: 9.
+      cantidad: 4,
     },
     desarrollosDestacados: {
       titulo: "Desarrollos destacados",
       intro: "Proyectos seleccionados por nuestro equipo.",
       textoBoton: "Ver todos los desarrollos",
+      // Cuántos desarrollos marcados como destacado se muestran en Inicio.
+      // El orden lo define el panel de destacados del admin. Tope: 9.
+      cantidad: 6,
     },
     yucatanTeaser: {
       eyebrow: "Editorial",
@@ -338,6 +345,9 @@ export const CONTENT_DEFAULTS = {
       intro: "Enlaces oficiales sobre seguridad, salud, movilidad y vida cotidiana en Yucatán.",
     },
     vacio: "Contenido pendiente para esta categoría.",
+    faqTitulo: "Preguntas frecuentes",
+    faqIntro: "Agrupadas por tema para que encuentre rápido lo que busca.",
+    faq: FAQ_GRUPOS,
   },
   empresa: {
     hero: {
@@ -409,9 +419,6 @@ export const CONTENT_DEFAULTS = {
     ],
     serviciosTitulo: "Servicios",
     servicios: SERVICIOS,
-    faqTitulo: "Preguntas frecuentes",
-    faqIntro: "Agrupadas por tema para que encuentre rápido lo que busca.",
-    faq: FAQ_GRUPOS,
   },
   contacto: {
     portada: {
@@ -466,7 +473,7 @@ export const CONTENT_DEFAULTS = {
     },
     faq: {
       titulo: "Preguntas frecuentes",
-      intro: "Las consultas más comunes. El listado completo está en Empresa.",
+      intro: "Las consultas más comunes. El listado completo está en Recursos.",
       textoBoton: "Ver todas las preguntas frecuentes",
       items: FAQ_CONTACTO,
     },
@@ -493,6 +500,13 @@ export const CONTENT_DEFAULTS = {
 } as const;
 
 export type ContentKey = keyof typeof CONTENT_DEFAULTS;
+
+// Compartido entre el Home (qué mostrar) y el admin (qué previsualizar como
+// "entra"/"no entra" en el nuevo orden de destacadas), para que nunca diverjan.
+export const MAX_DESTACADAS_HOME = 9;
+export function limiteDestacadasHome(cantidad: number): number {
+  return Math.min(MAX_DESTACADAS_HOME, Math.max(1, Math.trunc(cantidad) || 4));
+}
 
 type AnyRecord = Record<string, unknown>;
 

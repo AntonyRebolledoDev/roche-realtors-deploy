@@ -197,7 +197,7 @@ function Contacto() {
           ))}
         </div>
         <div className="mt-8 text-center">
-          <Link to="/empresa" hash="faq">
+          <Link to="/recursos" hash="faq">
             <BtnPH label={c.faq.textoBoton} variant="outline" />
           </Link>
         </div>

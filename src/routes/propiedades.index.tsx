@@ -37,13 +37,26 @@ const EN_CATEGORIA: Record<string, (categoria: string) => boolean> = {
   "comercial-industrial": (cat) => cat === "comercial-industrial",
 };
 
+// Dentro de "Terrenos y Macrolotes" el cliente elige, además, entre estos
+// dos subtipos (por `clave` de `categoria`, igual que EN_CATEGORIA).
+const SUBTIPOS_TERRENO = [
+  { clave: "terreno-residencial", nombre: "Terrenos Residenciales" },
+  { clave: "macrolote", nombre: "Macrolotes" },
+];
+
 function Propiedades() {
   const c = useSiteContent("propiedades");
   const categorias = c.categorias;
   const [active, setActive] = useState<string | null>(null);
+  const [subTipo, setSubTipo] = useState(SUBTIPOS_TERRENO[0].clave);
 
   const tileActiva = categorias.find((t) => t.clave === active);
-  const filtro = active ? EN_CATEGORIA[active] : undefined;
+  const esTerrenos = active === "terrenos";
+  const filtro = active
+    ? esTerrenos
+      ? (cat: string) => cat === subTipo
+      : EN_CATEGORIA[active]
+    : undefined;
   const fichas = usePropiedades()
     .filter((p) => filtro?.(p.categoria))
     .map(fichaDeFila);
@@ -103,32 +116,44 @@ function Propiedades() {
         /* 3b. Grid filtrado */
         <SectionBand>
           <SectionHeader title={tileActiva?.nombre ?? ""} />
+          {esTerrenos && (
+            <div className="flex flex-wrap gap-x-6 gap-y-2 mb-8 -mt-4">
+              {SUBTIPOS_TERRENO.map((st) => (
+                <button
+                  key={st.clave}
+                  onClick={() => setSubTipo(st.clave)}
+                  className={`py-2 text-sm md:text-base font-medium tracking-tight border-b-2 transition-colors ${
+                    subTipo === st.clave
+                      ? "border-gold-soft text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {st.nombre}
+                </button>
+              ))}
+            </div>
+          )}
           {fichas.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {fichas.map((f) => (
-                  <Link
-                    key={f.slug}
-                    to="/propiedades/$id"
-                    params={{ id: f.slug }}
-                    className="contents"
-                  >
-                    <PropertyCard
-                      title={f.nombre}
-                      tipo={f.tipo}
-                      operacion={f.operacion}
-                      imagen={f.imagen}
-                      zona={f.zona}
-                      detalle={f.detalle}
-                      precio={f.precio}
-                    />
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-8 text-center">
-                <BtnPH label="Ver más" variant="outline" />
-              </div>
-            </>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {fichas.map((f) => (
+                <Link
+                  key={f.slug}
+                  to="/propiedades/$id"
+                  params={{ id: f.slug }}
+                  className="contents"
+                >
+                  <PropertyCard
+                    title={f.nombre}
+                    tipo={f.tipo}
+                    operacion={f.operacion}
+                    imagen={f.imagen}
+                    zona={f.zona}
+                    detalle={f.detalle}
+                    precio={f.precio}
+                  />
+                </Link>
+              ))}
+            </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-border bg-card/40 py-16 text-center">
               <p className="text-base text-foreground">

@@ -9,13 +9,22 @@ import {
   SectionHeader,
   Prose,
   Reveal,
+  YtThumb,
 } from "@/components/wireframe/primitives";
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { NewsletterModal } from "@/components/wireframe/NewsletterModal";
 import { NewsletterForm } from "@/components/wireframe/NewsletterForm";
-import { useSiteContent } from "@/lib/site-content";
-import { usePropiedades, useArticulosRecientes } from "@/lib/catalogos";
+import { useSiteContent, limiteDestacadasHome } from "@/lib/site-content";
+import { usePropiedades, useDesarrollos, useArticulosRecientes, useVideos } from "@/lib/catalogos";
 import { fichaDeFila } from "@/lib/propiedad-card";
+import { DESARROLLO_DEMO, textoPrecioDesde, type Desarrollo } from "@/content/fichas";
+
+function sanitizeImg(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.includes("/__l5e/assets-v1/")) return undefined;
+  if (url.startsWith("/src/assets/")) return undefined;
+  return url;
+}
 
 
 export const Route = createFileRoute("/")({
@@ -36,11 +45,26 @@ function Home() {
   const heroImages = c.hero.imagenes;
   const [slide, setSlide] = useState(0);
   const propiedades = usePropiedades();
+  const limiteDestacadas = limiteDestacadasHome(c.destacadas.cantidad);
   const destacadas = propiedades
     .filter((p) => p.destacada)
-    .slice(0, 4)
+    .sort((a, b) => a.orden_destacada - b.orden_destacada)
+    .slice(0, limiteDestacadas)
     .map(fichaDeFila);
-  const articulosRecientes = useArticulosRecientes(3);
+  const limiteDesarrollos = limiteDestacadasHome(c.desarrollosDestacados.cantidad);
+  const desarrollosDestacados = useDesarrollos()
+    .filter((d) => d.destacado)
+    .sort((a, b) => a.orden_destacada - b.orden_destacada)
+    .slice(0, limiteDesarrollos)
+    .map((f) => ({
+      slug: f.slug,
+      ...DESARROLLO_DEMO,
+      ...(f.data as Partial<Desarrollo>),
+      nombre: f.nombre,
+      imagen: sanitizeImg((f.data as Partial<Desarrollo>)?.imagen),
+    }));
+  const ultimoVideo = useVideos()[0];
+  const articulosRecientes = useArticulosRecientes(ultimoVideo ? 2 : 3);
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % heroImages.length), 6000);
     return () => clearInterval(t);
@@ -171,7 +195,7 @@ function Home() {
       {/* 4. PROPIEDADES DESTACADAS */}
       <SectionBand bg="gray">
         <SectionHeader title={c.destacadas.titulo} intro={c.destacadas.intro} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {destacadas.length > 0
             ? destacadas.map((f, i) => (
                 <Reveal key={f.slug} delay={i * 90}>
@@ -206,36 +230,74 @@ function Home() {
           intro={c.desarrollosDestacados.intro}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Reveal key={i} delay={(i % 2) * 90}>
-              <Link
-                to="/desarrollos/$id"
-                params={{ id: String(i + 1) }}
-                className="group block rounded-3xl border border-border bg-card overflow-hidden hover-lift transition-colors hover:border-gold-soft/50"
-              >
-                <div className="relative media-zoom">
-                  <ImagePH label="IMAGEN DESARROLLO" aspect="16 / 9" />
-                  <span className="absolute top-4 left-4 rounded-full bg-background/80 backdrop-blur-md text-[11px] px-3 py-1">
-                    Preventa
-                  </span>
-                </div>
-                <div className="p-6 space-y-3">
-                  <div className="text-lg font-semibold tracking-tight">Nombre del desarrollo</div>
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-gold-soft">
-                    {["Residencial", "Comercial", "Logístico/Industrial"][i % 3]}
+          {desarrollosDestacados.length > 0
+            ? desarrollosDestacados.map((d, i) => {
+                const desdeTexto = textoPrecioDesde(d.desde);
+                const detalle = [desdeTexto && `Desde ${desdeTexto}`, ...(d.amenidades ?? []).slice(0, 2)]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <Reveal key={d.slug} delay={(i % 2) * 90}>
+                    <Link
+                      to="/desarrollos/$id"
+                      params={{ id: d.slug }}
+                      className="group block rounded-3xl border border-border bg-card overflow-hidden hover-lift transition-colors hover:border-gold-soft/50"
+                    >
+                      <div className="relative media-zoom">
+                        {d.imagen ? (
+                          <img
+                            src={d.imagen}
+                            alt={d.nombre}
+                            loading="lazy"
+                            className="w-full object-cover"
+                            style={{ aspectRatio: "16 / 9" }}
+                          />
+                        ) : (
+                          <ImagePH label="IMAGEN DESARROLLO" aspect="16 / 9" />
+                        )}
+                        <span className="absolute top-4 left-4 rounded-full bg-background/80 backdrop-blur-md text-[11px] px-3 py-1">
+                          {d.tipoOperacion}
+                        </span>
+                      </div>
+                      <div className="p-6 space-y-3">
+                        <div className="text-lg font-semibold tracking-tight">{d.nombre}</div>
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-gold-soft">
+                          {d.tipoDesarrollo}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{d.ubicacion}</div>
+                        {d.ofertas.length > 0 && (
+                          <div className="text-sm text-muted-foreground">
+                            {d.ofertas.map((o) => o.tipo).join(" · ")}
+                          </div>
+                        )}
+                        {detalle && (
+                          <div className="flex gap-2 text-[11px] text-muted-foreground flex-wrap pt-1">
+                            <span>{detalle}</span>
+                          </div>
+                        )}
+                        <div className="pt-3"><BtnPH label="Ver desarrollo" variant="outline" size="sm" /></div>
+                      </div>
+                    </Link>
+                  </Reveal>
+                );
+              })
+            : Array.from({ length: 6 }).map((_, i) => (
+                <Reveal key={i} delay={(i % 2) * 90}>
+                  <div className="group block rounded-3xl border border-border bg-card overflow-hidden">
+                    <div className="relative media-zoom">
+                      <ImagePH label="IMAGEN DESARROLLO" aspect="16 / 9" />
+                    </div>
+                    <div className="p-6 space-y-3">
+                      <div className="text-lg font-semibold tracking-tight">Nombre del desarrollo</div>
+                      <div className="text-[11px] uppercase tracking-[0.22em] text-gold-soft">
+                        {["Residencial", "Comercial", "Mixto", "Industrial"][i % 4]}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Zona / Municipio</div>
+                      <div className="pt-3"><BtnPH label="Ver desarrollo" variant="outline" size="sm" /></div>
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">Zona / Municipio</div>
-                  <div className="text-sm text-muted-foreground">
-                    Lotes residenciales · Casas · Departamentos
-                  </div>
-                  <div className="flex gap-2 text-[11px] text-muted-foreground flex-wrap pt-1">
-                    <span>Desde $000,000 · Alberca · Seguridad</span>
-                  </div>
-                  <div className="pt-3"><BtnPH label="Ver desarrollo" variant="outline" size="sm" /></div>
-                </div>
-              </Link>
-            </Reveal>
-          ))}
+                </Reveal>
+              ))}
         </div>
         <div className="mt-12 text-center">
           <Link to="/desarrollos"><BtnPH label={c.desarrollosDestacados.textoBoton} /></Link>
@@ -308,13 +370,51 @@ function Home() {
       <SectionBand bg="gray">
         <SectionHeader title={c.recursos.titulo} />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {articulosRecientes.length > 0
-            ? articulosRecientes.map((a, i) => (
-                <Reveal key={a.slug} delay={i * 90}>
+          {articulosRecientes.length > 0 || ultimoVideo ? (
+            <>
+              {ultimoVideo && (
+                <Reveal delay={0}>
+                  <a
+                    href={ultimoVideo.url}
+                    target="_blank"
+                    rel="noopener"
+                    className="group h-full rounded-3xl bg-card overflow-hidden hover-lift border border-border flex flex-col"
+                  >
+                    <div className="relative media-zoom">
+                      <YtThumb
+                        id={ultimoVideo.id}
+                        alt={ultimoVideo.titulo}
+                        className="w-full object-cover"
+                        style={{ aspectRatio: "16 / 9" }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="w-12 h-12 rounded-full border-2 border-foreground bg-ink/70 flex items-center justify-center text-xl transition-transform group-hover:scale-110">
+                          ▶
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6 space-y-3 flex-1 flex flex-col">
+                      <span className="card-label">Termómetro Inmobiliario</span>
+                      <div className="text-lg font-semibold text-foreground tracking-tight line-clamp-2">
+                        {ultimoVideo.titulo}
+                      </div>
+                      <p className="text-sm leading-relaxed text-muted-foreground flex-1">
+                        Duración {ultimoVideo.duracion}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+                        <span>{ultimoVideo.fecha}</span>
+                        <span className="transition-colors group-hover:text-gold">Ver video →</span>
+                      </div>
+                    </div>
+                  </a>
+                </Reveal>
+              )}
+              {articulosRecientes.map((a, i) => (
+                <Reveal key={a.slug} delay={(i + (ultimoVideo ? 1 : 0)) * 90}>
                   <Link
                     to="/recursos/$slug"
                     params={{ slug: a.slug }}
-                    className="group rounded-3xl bg-card overflow-hidden hover-lift border border-border flex flex-col"
+                    className="group h-full rounded-3xl bg-card overflow-hidden hover-lift border border-border flex flex-col"
                   >
                     <div className="relative media-zoom">
                       {a.imagen ? (
@@ -344,12 +444,15 @@ function Home() {
                     </div>
                   </Link>
                 </Reveal>
-              ))
-            : Array.from({ length: 3 }).map((_, i) => (
-                <Reveal key={i} delay={i * 90}>
-                  <ResourceCard />
-                </Reveal>
               ))}
+            </>
+          ) : (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Reveal key={i} delay={i * 90}>
+                <ResourceCard />
+              </Reveal>
+            ))
+          )}
         </div>
         <div className="mt-12 text-center">
           <Link to="/recursos"><BtnPH label={c.recursos.textoBoton} /></Link>

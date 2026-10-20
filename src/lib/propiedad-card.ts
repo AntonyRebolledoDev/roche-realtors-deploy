@@ -28,6 +28,7 @@ export function fichaDeFila(f: FilaPropiedad): FichaPropiedadCard {
   const detalle = [
     par(d.distribucion, "recámaras") && `${par(d.distribucion, "recámaras")} rec`,
     par(d.distribucion, "baños") && `${par(d.distribucion, "baños")} baños`,
+    par(d.distribucion, "medio baño") && `${par(d.distribucion, "medio baño")} medio baño`,
     par(d.medidas, "construcción") ?? par(d.medidas, "terreno") ?? par(d.medidas, "dimensión"),
   ]
     .filter(Boolean)

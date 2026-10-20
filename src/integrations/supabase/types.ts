@@ -66,6 +66,7 @@ export type Database = {
           id: string
           nombre: string
           orden: number
+          orden_destacada: number
           slug: string
           updated_at: string
         }
@@ -78,6 +79,7 @@ export type Database = {
           id?: string
           nombre: string
           orden?: number
+          orden_destacada?: number
           slug: string
           updated_at?: string
         }
@@ -90,6 +92,7 @@ export type Database = {
           id?: string
           nombre?: string
           orden?: number
+          orden_destacada?: number
           slug?: string
           updated_at?: string
         }
@@ -170,6 +173,7 @@ export type Database = {
           id: string
           nombre: string
           orden: number
+          orden_destacada: number
           slug: string
           updated_at: string
         }
@@ -184,6 +188,7 @@ export type Database = {
           id?: string
           nombre: string
           orden?: number
+          orden_destacada?: number
           slug: string
           updated_at?: string
         }
@@ -198,6 +203,7 @@ export type Database = {
           id?: string
           nombre?: string
           orden?: number
+          orden_destacada?: number
           slug?: string
           updated_at?: string
         }

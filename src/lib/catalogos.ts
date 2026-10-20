@@ -177,6 +177,7 @@ export type FilaPropiedad = {
   nombre: string;
   categoria: string;
   destacada: boolean;
+  orden_destacada: number;
   data: Record<string, unknown>;
 };
 
@@ -186,7 +187,7 @@ export function usePropiedades(categoria?: string): FilaPropiedad[] {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("propiedades")
-        .select("id,slug,nombre,categoria,destacada,data")
+        .select("id,slug,nombre,categoria,destacada,orden_destacada,data")
         .eq("estado", "publicada")
         .eq("archivada", false)
         .order("orden");
@@ -235,6 +236,7 @@ export type FilaDesarrollo = {
   slug: string;
   nombre: string;
   destacado: boolean;
+  orden_destacada: number;
   data: Record<string, unknown>;
 };
 
@@ -244,7 +246,7 @@ export function useDesarrollos(): FilaDesarrollo[] {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("desarrollos")
-        .select("id,slug,nombre,destacado,data")
+        .select("id,slug,nombre,destacado,orden_destacada,data")
         .eq("estado", "publicado")
         .eq("archivado", false)
         .order("orden");

@@ -5,7 +5,9 @@ import Swal from "sweetalert2";
 import { supabase } from "@/integrations/supabase/client";
 import { JsonEditor } from "@/components/admin/JsonEditor";
 import { AdminCard, Btn, Label, TextInput, ImageField } from "@/components/admin/ui";
+import { DestacadasOrden } from "@/components/admin/DestacadasOrden";
 import { PROPIEDADES_DEMO } from "@/content/fichas";
+import { useSiteContent, limiteDestacadasHome } from "@/lib/site-content";
 
 // Tema oscuro acorde al panel de administración.
 const ALERTA_OSCURA = {
@@ -45,6 +47,7 @@ type Fila = {
   destacada: boolean;
   archivada: boolean;
   orden: number;
+  orden_destacada: number;
   data: Record<string, unknown>;
 };
 
@@ -79,6 +82,7 @@ function imagenesDe(data: Record<string, unknown>): string[] {
 
 function AdminPropiedades() {
   const qc = useQueryClient();
+  const limiteDestacadas = limiteDestacadasHome(useSiteContent("inicio").destacadas.cantidad);
   const [busqueda, setBusqueda] = useState("");
   const [filtro, setFiltro] = useState<string>("todas");
   const [verArchivadas, setVerArchivadas] = useState(false);
@@ -106,6 +110,16 @@ function AdminPropiedades() {
       (filtro === "todas" || f.categoria === filtro) &&
       f.nombre.toLowerCase().includes(busqueda.toLowerCase()),
   );
+
+  // Mismo conjunto que ve el Home: publicadas, no archivadas y destacadas.
+  const filasDestacadas = (filas ?? [])
+    .filter((f) => f.destacada && !f.archivada && f.estado === "publicada")
+    .map((f) => ({
+      id: f.id,
+      nombre: f.nombre,
+      categoriaLabel: CATEGORIAS.find(([v]) => v === f.categoria)?.[1] ?? f.categoria,
+      orden_destacada: f.orden_destacada,
+    }));
 
   const refrescar = () => qc.invalidateQueries({ queryKey: ["admin-propiedades"] });
 
@@ -255,6 +269,10 @@ function AdminPropiedades() {
                 value={edicion.orden}
                 onChange={(e) => setEdicion({ ...edicion, orden: Number(e.target.value) })}
               />
+              <p className="mt-1 text-[11px] text-white/40">
+                Define el orden dentro de su categoría en /propiedades (menor va primero). El
+                orden en Inicio se ajusta aparte, en el panel de destacadas.
+              </p>
             </div>
           </div>
           <label className="flex items-center gap-3 text-sm text-white/80">
@@ -320,12 +338,23 @@ function AdminPropiedades() {
               destacada: false,
               archivada: false,
               orden: 0,
+              orden_destacada: 0,
               data: { ...PROPIEDADES_DEMO.casa } as Record<string, unknown>,
             })
           }
         >
           Nueva propiedad
         </Btn>
+      </div>
+
+      <div className="mt-6">
+        <DestacadasOrden
+          tabla="propiedades"
+          entidad="propiedad"
+          filas={filasDestacadas}
+          limite={limiteDestacadas}
+          onCambiado={refrescar}
+        />
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">

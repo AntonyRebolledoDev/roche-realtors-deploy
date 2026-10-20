@@ -5,7 +5,9 @@ import Swal from "sweetalert2";
 import { supabase } from "@/integrations/supabase/client";
 import { JsonEditor } from "@/components/admin/JsonEditor";
 import { AdminCard, Btn, Label, Select, TextInput, ImageField } from "@/components/admin/ui";
+import { DestacadasOrden } from "@/components/admin/DestacadasOrden";
 import { CATALOGOS, DESARROLLO_DEMO } from "@/content/fichas";
+import { useSiteContent, limiteDestacadasHome } from "@/lib/site-content";
 
 /** Campos del nivel superior que ya se editan con un select dedicado fuera del editor genérico. */
 const OCULTAR_DEL_EDITOR = ["nombre", "tipoDesarrollo", "tipoOperacion", "disponibilidad"];
@@ -38,6 +40,7 @@ type Fila = {
   destacado: boolean;
   archivado: boolean;
   orden: number;
+  orden_destacada: number;
   data: Record<string, unknown>;
 };
 
@@ -78,6 +81,7 @@ function imagenesDe(data: Record<string, unknown>): string[] {
 
 function AdminDesarrollos() {
   const qc = useQueryClient();
+  const limiteDestacados = limiteDestacadasHome(useSiteContent("inicio").desarrollosDestacados.cantidad);
   const [busqueda, setBusqueda] = useState("");
   const [verArchivados, setVerArchivados] = useState(false);
   const [edicion, setEdicion] = useState<Fila | null>(null);
@@ -97,6 +101,17 @@ function AdminDesarrollos() {
   const lista = (filas ?? []).filter(
     (f) => f.archivado === verArchivados && f.nombre.toLowerCase().includes(busqueda.toLowerCase()),
   );
+
+  // Mismo conjunto que ve el Home: publicados, no archivados y destacados.
+  const filasDestacados = (filas ?? [])
+    .filter((f) => f.destacado && !f.archivado && f.estado === "publicado")
+    .map((f) => ({
+      id: f.id,
+      nombre: f.nombre,
+      categoriaLabel: String(f.data?.["tipoDesarrollo"] ?? ""),
+      orden_destacada: f.orden_destacada,
+    }));
+
   const refrescar = () => qc.invalidateQueries({ queryKey: ["admin-desarrollos"] });
 
   const eliminar = async (f: Fila) => {
@@ -342,12 +357,23 @@ function AdminDesarrollos() {
               destacado: false,
               archivado: false,
               orden: 0,
+              orden_destacada: 0,
               data: { ...DESARROLLO_DEMO } as unknown as Record<string, unknown>,
             })
           }
         >
           Nuevo desarrollo
         </Btn>
+      </div>
+
+      <div className="mt-6">
+        <DestacadasOrden
+          tabla="desarrollos"
+          entidad="desarrollo"
+          filas={filasDestacados}
+          limite={limiteDestacados}
+          onCambiado={refrescar}
+        />
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">

@@ -1,5 +1,6 @@
-import { type ReactNode, type CSSProperties } from "react";
+import { useRef, useState, type ReactNode, type CSSProperties } from "react";
 import { Reveal } from "./Reveal";
+import { ytThumb, ytThumbFallback } from "@/content/textos";
 
 // Sistema visual: negro, blanco y dorado. Minimalista, mucho aire,
 // tipografía Outfit (títulos) + Figtree (texto), movimiento suave.
@@ -211,6 +212,44 @@ export function Tab({
     >
       {label}
     </span>
+  );
+}
+
+/** Miniatura de YouTube con reintento automático si `maxresdefault` no existe. */
+export function YtThumb({
+  id,
+  alt,
+  className,
+  style,
+}: {
+  id: string;
+  alt: string;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const [src, setSrc] = useState(ytThumb(id));
+  const triedFallback = useRef(false);
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      className={className}
+      style={style}
+      onError={() => {
+        if (!triedFallback.current) {
+          triedFallback.current = true;
+          setSrc(ytThumbFallback(id));
+        }
+      }}
+      onLoad={(e) => {
+        if (!triedFallback.current && e.currentTarget.naturalWidth < 480) {
+          triedFallback.current = true;
+          setSrc(ytThumbFallback(id));
+        }
+      }}
+    />
   );
 }
 
