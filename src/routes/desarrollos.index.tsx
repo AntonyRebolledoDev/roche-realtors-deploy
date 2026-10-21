@@ -10,6 +10,8 @@ import {
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { useSiteContent } from "@/lib/site-content";
 import { useDesarrollos } from "@/lib/catalogos";
+import { DESARROLLO_DEMO, textoPrecioDesde, type Desarrollo } from "@/content/fichas";
+import { precioANumero } from "@/lib/precio";
 
 function sanitizeImg(url: string | null | undefined): string | undefined {
   if (!url) return undefined;
@@ -38,7 +40,7 @@ type Ficha = {
   categoria: string;
   zona: string;
   productos: string;
-  detalle: string;
+  precio: string;
   imagen?: string;
 };
 
@@ -65,9 +67,11 @@ function DevCard({ f }: { f: Ficha }) {
         <div className="text-[11px] uppercase tracking-[0.22em] text-gold-soft">{f.categoria}</div>
         <div className="text-xs text-muted-foreground">{f.zona}</div>
         <div className="text-xs text-muted-foreground">{f.productos}</div>
-        <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground pt-1">
-          <span>{f.detalle}</span>
-        </div>
+        {f.precio && (
+          <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground pt-1">
+            <span>Desde {f.precio}</span>
+          </div>
+        )}
         <div className="pt-3">
           <BtnPH label="Ver desarrollo" variant="outline" size="sm" />
         </div>
@@ -79,10 +83,10 @@ function DevCard({ f }: { f: Ficha }) {
 const PLACEHOLDERS: Ficha[] = [1, 2, 3, 4, 5, 6].map((i) => ({
   id: String(i),
   nombre: "Nombre del desarrollo",
-  categoria: ["Residencial", "Comercial", "Logístico/Industrial"][i % 3],
+  categoria: ["Residencial", "Comercial", "Mixto", "Industrial"][i % 4],
   zona: "Zona / Municipio",
   productos: "Lotes · Casas · Departamentos",
-  detalle: "Desde $000,000 · Amenidades",
+  precio: "$000,000 MXN",
 }));
 
 function Desarrollos() {
@@ -93,15 +97,24 @@ function Desarrollos() {
 
   const fichas: Ficha[] =
     filas.length > 0
-      ? filas.map((d) => ({
-          id: d.slug,
-          nombre: d.nombre,
-          categoria: String(d.data?.['categoria'] ?? ""),
-          zona: String(d.data?.['zona'] ?? ""),
-          productos: String(d.data?.['productos'] ?? ""),
-          detalle: String(d.data?.['detalle'] ?? ""),
-          imagen: sanitizeImg(d.data?.['imagen'] as string),
-        }))
+      ? filas
+          .map((f) => {
+            const d: Desarrollo = {
+              ...DESARROLLO_DEMO,
+              ...(f.data as Partial<Desarrollo>),
+              nombre: f.nombre,
+            };
+            return {
+              id: f.slug,
+              nombre: d.nombre,
+              categoria: d.tipoDesarrollo,
+              zona: d.ubicacion,
+              productos: d.ofertas.map((o) => o.tipo).join(" · "),
+              precio: textoPrecioDesde(d.desde),
+              imagen: sanitizeImg(d.imagen),
+            };
+          })
+          .sort((a, b) => precioANumero(a.precio) - precioANumero(b.precio))
       : PLACEHOLDERS;
 
   return (

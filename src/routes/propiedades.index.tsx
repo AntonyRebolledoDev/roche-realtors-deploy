@@ -13,6 +13,7 @@ import {
 import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { usePropiedades } from "@/lib/catalogos";
 import { fichaDeFila } from "@/lib/propiedad-card";
+import { precioANumero } from "@/lib/precio";
 import { MapaNorteMerida } from "@/components/wireframe/MapaNorteMerida";
 import { MapaCostaYucateca } from "@/components/wireframe/MapaCostaYucateca";
 export const Route = createFileRoute("/propiedades/")({
@@ -59,7 +60,8 @@ function Propiedades() {
     : undefined;
   const fichas = usePropiedades()
     .filter((p) => filtro?.(p.categoria))
-    .map(fichaDeFila);
+    .map(fichaDeFila)
+    .sort((a, b) => precioANumero(a.precio) - precioANumero(b.precio));
 
   return (
     <>

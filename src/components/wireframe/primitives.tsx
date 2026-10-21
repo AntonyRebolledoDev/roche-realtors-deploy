@@ -277,7 +277,7 @@ export function PropertyCard({
   precio?: string;
 }) {
   return (
-    <div className="group rounded-3xl bg-card overflow-hidden hover-lift border border-border transition-colors hover:border-gold-soft/50">
+    <div className="group h-full flex flex-col rounded-3xl bg-card overflow-hidden hover-lift border border-border transition-colors hover:border-gold-soft/50">
       <div className="relative media-zoom">
         {imagen ? (
           <img
@@ -301,13 +301,13 @@ export function PropertyCard({
           ♡
         </span>
       </div>
-      <div className="p-6 space-y-2.5">
+      <div className="p-6 space-y-2.5 flex-1 flex flex-col">
         <div className="text-lg font-semibold text-foreground tracking-tight">{title}</div>
         <div className="text-[11px] uppercase tracking-[0.22em] text-gold-soft">{tipo}</div>
         <div className="text-sm text-muted-foreground">{zona}</div>
         <div className="text-[11px] text-muted-foreground">{detalle}</div>
         <div className="text-xl font-semibold pt-1 tracking-tight">{precio}</div>
-        <div className="pt-2">
+        <div className="pt-2 mt-auto">
           <BtnPH label="Ver propiedad" variant="outline" size="sm" />
         </div>
       </div>
