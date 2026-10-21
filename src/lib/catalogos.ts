@@ -93,15 +93,25 @@ export function useArticulos(): (Articulo & { fecha?: string })[] {
   return data.map(aArticulo);
 }
 
-export function useArticulosRecientes(limit = 3): (Articulo & { fecha?: string })[] {
+/**
+ * `categoriaClave` filtra por la clave interna de la categoría (p. ej.
+ * "noticias", "ley" — las mismas que `CATEGORIA_PUBLICA`), no por el nombre
+ * visible. Sin ella, trae los más recientes de cualquier categoría.
+ */
+export function useArticulosRecientes(
+  limit = 3,
+  categoriaClave?: string,
+): (Articulo & { fecha?: string })[] {
   const { data } = useQuery({
-    queryKey: ["pub", "articulos-recientes", limit],
+    queryKey: ["pub", "articulos-recientes", limit, categoriaClave],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("articulos")
         .select("slug,titulo,categoria,fecha,data")
         .eq("estado", "publicado")
-        .eq("archivado", false)
+        .eq("archivado", false);
+      if (categoriaClave) query = query.eq("categoria", categoriaClave);
+      const { data, error } = await query
         .order("fecha", { ascending: false, nullsFirst: false })
         .limit(limit);
       if (error) throw error;
@@ -112,7 +122,10 @@ export function useArticulosRecientes(limit = 3): (Articulo & { fecha?: string }
         ? 0
         : 30_000,
   });
-  if (!data || data.length === 0) return ARTICULOS.slice(0, limit);
+  const base = categoriaClave
+    ? ARTICULOS.filter((a) => a.categoria === CATEGORIA_PUBLICA[categoriaClave])
+    : ARTICULOS;
+  if (!data || data.length === 0) return base.slice(0, limit);
   return data.map(aArticulo);
 }
 
@@ -169,6 +182,37 @@ export function useEstiloVida(): RecursoEstiloVida[] {
     fuente: r.fuente ?? "",
     imagen: sanitizeImg(r.imagen) ?? "",
   }));
+}
+
+/** El recurso de Estilo de vida agregado más recientemente (para el Home). */
+export function useEstiloVidaReciente(): RecursoEstiloVida | undefined {
+  const { data } = useQuery({
+    queryKey: ["pub", "estilo_vida_reciente"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("estilo_vida")
+        .select("id,titulo,texto,url,fuente,imagen,created_at")
+        .eq("archivado", false)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime:
+      typeof window !== "undefined" && (window as unknown as Record<string, unknown>).__E2E_TEST
+        ? 0
+        : 30_000,
+  });
+  if (!data || data.length === 0) return ESTILO_DE_VIDA[0];
+  const r = data[0];
+  return {
+    id: r.id,
+    titulo: r.titulo,
+    texto: r.texto ?? "",
+    url: r.url,
+    fuente: r.fuente ?? "",
+    imagen: sanitizeImg(r.imagen) ?? "",
+  };
 }
 
 export type FilaPropiedad = {

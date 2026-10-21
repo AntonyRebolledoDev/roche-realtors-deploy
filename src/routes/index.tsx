@@ -15,7 +15,13 @@ import { AgendaCita } from "@/components/wireframe/AgendaCita";
 import { NewsletterModal } from "@/components/wireframe/NewsletterModal";
 import { NewsletterForm } from "@/components/wireframe/NewsletterForm";
 import { useSiteContent, limiteDestacadasHome } from "@/lib/site-content";
-import { usePropiedades, useDesarrollos, useArticulosRecientes, useVideos } from "@/lib/catalogos";
+import {
+  usePropiedades,
+  useDesarrollos,
+  useArticulosRecientes,
+  useEstiloVidaReciente,
+  useVideos,
+} from "@/lib/catalogos";
 import { fichaDeFila } from "@/lib/propiedad-card";
 import { DESARROLLO_DEMO, textoPrecioDesde, type Desarrollo } from "@/content/fichas";
 
@@ -63,8 +69,11 @@ function Home() {
       nombre: f.nombre,
       imagen: sanitizeImg((f.data as Partial<Desarrollo>)?.imagen),
     }));
+  // Un recurso por categoría: el último video de Termómetro, la última
+  // noticia y el último recurso de Estilo de vida agregados.
   const ultimoVideo = useVideos()[0];
-  const articulosRecientes = useArticulosRecientes(ultimoVideo ? 2 : 3);
+  const ultimaNoticia = useArticulosRecientes(1, "noticias")[0];
+  const ultimoEstiloVida = useEstiloVidaReciente();
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % heroImages.length), 6000);
     return () => clearInterval(t);
@@ -370,7 +379,7 @@ function Home() {
       <SectionBand bg="gray">
         <SectionHeader title={c.recursos.titulo} />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {articulosRecientes.length > 0 || ultimoVideo ? (
+          {ultimoVideo || ultimaNoticia || ultimoEstiloVida ? (
             <>
               {ultimoVideo && (
                 <Reveal delay={0}>
@@ -409,18 +418,18 @@ function Home() {
                   </a>
                 </Reveal>
               )}
-              {articulosRecientes.map((a, i) => (
-                <Reveal key={a.slug} delay={(i + (ultimoVideo ? 1 : 0)) * 90}>
+              {ultimaNoticia && (
+                <Reveal delay={(ultimoVideo ? 1 : 0) * 90}>
                   <Link
                     to="/recursos/$slug"
-                    params={{ slug: a.slug }}
+                    params={{ slug: ultimaNoticia.slug }}
                     className="group h-full rounded-3xl bg-card overflow-hidden hover-lift border border-border flex flex-col"
                   >
                     <div className="relative media-zoom">
-                      {a.imagen ? (
+                      {ultimaNoticia.imagen ? (
                         <img
-                          src={a.imagen}
-                          alt={a.titulo}
+                          src={ultimaNoticia.imagen}
+                          alt={ultimaNoticia.titulo}
                           loading="lazy"
                           className="w-full object-cover"
                           style={{ aspectRatio: "16 / 9" }}
@@ -430,21 +439,57 @@ function Home() {
                       )}
                     </div>
                     <div className="p-6 space-y-3 flex-1 flex flex-col">
-                      <span className="card-label">{a.categoria}</span>
+                      <span className="card-label">{ultimaNoticia.categoria}</span>
                       <div className="text-lg font-semibold text-foreground tracking-tight line-clamp-2">
-                        {a.titulo}
+                        {ultimaNoticia.titulo}
                       </div>
                       <p className="text-sm leading-relaxed text-muted-foreground flex-1 line-clamp-3">
-                        {a.entradilla}
+                        {ultimaNoticia.entradilla}
                       </p>
                       <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
-                        <span>{a.fecha ?? ""}</span>
+                        <span>{ultimaNoticia.fecha ?? ""}</span>
                         <span className="transition-colors group-hover:text-gold">Leer más →</span>
                       </div>
                     </div>
                   </Link>
                 </Reveal>
-              ))}
+              )}
+              {ultimoEstiloVida && (
+                <Reveal delay={((ultimoVideo ? 1 : 0) + (ultimaNoticia ? 1 : 0)) * 90}>
+                  <a
+                    href={ultimoEstiloVida.url}
+                    target="_blank"
+                    rel="noopener"
+                    className="group h-full rounded-3xl bg-card overflow-hidden hover-lift border border-border flex flex-col"
+                  >
+                    <div className="relative media-zoom">
+                      {ultimoEstiloVida.imagen ? (
+                        <img
+                          src={ultimoEstiloVida.imagen}
+                          alt={ultimoEstiloVida.titulo}
+                          loading="lazy"
+                          className="w-full object-cover"
+                          style={{ aspectRatio: "16 / 9" }}
+                        />
+                      ) : (
+                        <ImagePH label="IMAGEN" aspect="16 / 9" />
+                      )}
+                    </div>
+                    <div className="p-6 space-y-3 flex-1 flex flex-col">
+                      <span className="card-label">{ultimoEstiloVida.fuente || "Estilo de vida"}</span>
+                      <div className="text-lg font-semibold text-foreground tracking-tight line-clamp-2">
+                        {ultimoEstiloVida.titulo}
+                      </div>
+                      <p className="text-sm leading-relaxed text-muted-foreground flex-1 line-clamp-3">
+                        {ultimoEstiloVida.texto}
+                      </p>
+                      <div className="flex items-center justify-end pt-2 text-xs text-muted-foreground">
+                        <span className="transition-colors group-hover:text-gold">Leer más ↗</span>
+                      </div>
+                    </div>
+                  </a>
+                </Reveal>
+              )}
             </>
           ) : (
             Array.from({ length: 3 }).map((_, i) => (
