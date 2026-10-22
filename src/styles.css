@@ -320,4 +320,12 @@
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
   }
+
+  /* Reduce el padding vertical del hero de Inicio para que todo su
+     contenido (título, botones y newsletter) quepa sin scroll cuando el
+     alto disponible es corto (p. ej. 1366×599 con escalado de Windows). */
+  .hero-pad-compact {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
 }
