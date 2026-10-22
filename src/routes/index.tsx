@@ -344,9 +344,9 @@ function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cEmpresa.testimonios.map((t, i) => (
             <Reveal key={i} delay={i * 90}>
-              <figure className="rounded-3xl border border-border bg-card p-6 space-y-4 hover-lift">
+              <figure className="h-full flex flex-col rounded-3xl border border-border bg-card p-6 space-y-4 hover-lift">
                 <div className="text-2xl text-muted-foreground">"</div>
-                <blockquote className="text-sm leading-7 text-foreground">{t.texto}</blockquote>
+                <blockquote className="flex-1 text-sm leading-7 text-foreground">{t.texto}</blockquote>
                 <figcaption className="pt-2 border-t border-border text-xs text-foreground">
                   <div className="font-semibold">{t.autor}</div>
                   <div className="text-muted-foreground">{t.lugar}</div>
