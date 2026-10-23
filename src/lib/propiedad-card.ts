@@ -15,7 +15,7 @@ export type FichaPropiedadCard = {
   operacion: string;
   imagen?: string;
   zona: string;
-  detalle: string;
+  detalle: string[];
   precio: string;
 };
 
@@ -25,14 +25,28 @@ export function fichaDeFila(f: FilaPropiedad): FichaPropiedadCard {
   const par = (lista?: [string, string][], clave?: string) =>
     lista?.find((t) => t?.[0]?.toLowerCase() === clave)?.[1];
 
+  // Campos con etiqueta propia (Terreno, Construcción…) en vez del string
+  // abreviado anterior ("3 rec · 200 m²"); cada uno se omite si la ficha no
+  // lo tiene capturado, así que la tarjeta se adapta sola por categoría sin
+  // lógica especial (terrenos no tienen recámaras, departamentos no tienen
+  // "Terreno", etc.).
+  const terreno = par(d.medidas, "terreno") ?? par(d.medidas, "dimensión");
+  const construccion = par(d.medidas, "construcción") ?? par(d.medidas, "construcción interior");
+  const frente = par(d.medidas, "frente");
+  const fondo = par(d.medidas, "fondo");
+  const recamaras = par(d.distribucion, "recámaras");
+  const banos = par(d.distribucion, "baños");
+  const medioBano = par(d.distribucion, "medio baño");
+
   const detalle = [
-    par(d.distribucion, "recámaras") && `${par(d.distribucion, "recámaras")} rec`,
-    par(d.distribucion, "baños") && `${par(d.distribucion, "baños")} baños`,
-    par(d.distribucion, "medio baño") && `${par(d.distribucion, "medio baño")} medio baño`,
-    par(d.medidas, "construcción") ?? par(d.medidas, "terreno") ?? par(d.medidas, "dimensión"),
-  ]
-    .filter(Boolean)
-    .join(" · ");
+    terreno && `Terreno: ${terreno}`,
+    construccion && `Construcción: ${construccion}`,
+    frente && `Frente: ${frente}`,
+    fondo && `Fondo: ${fondo}`,
+    recamaras && `${recamaras} recámaras`,
+    banos && `${banos} baños`,
+    medioBano && `${medioBano} medio baño`,
+  ].filter((v): v is string => Boolean(v));
 
   // Terrenos residenciales y macrolotes permiten elegir, por ficha, si la
   // tarjeta pública muestra el precio total o el precio por m².

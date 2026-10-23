@@ -23,7 +23,7 @@ import {
   useVideos,
 } from "@/lib/catalogos";
 import { fichaDeFila } from "@/lib/propiedad-card";
-import { DESARROLLO_DEMO, textoPrecioDesde, type Desarrollo } from "@/content/fichas";
+import { DESARROLLO_DEMO, type Desarrollo } from "@/content/fichas";
 
 function sanitizeImg(url: string | null | undefined): string | undefined {
   if (!url) return undefined;
@@ -241,10 +241,6 @@ function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {desarrollosDestacados.length > 0
             ? desarrollosDestacados.map((d, i) => {
-                const desdeTexto = textoPrecioDesde(d.desde);
-                const detalle = [desdeTexto && `Desde ${desdeTexto}`, ...(d.amenidades ?? []).slice(0, 2)]
-                  .filter(Boolean)
-                  .join(" · ");
                 return (
                   <Reveal key={d.slug} delay={(i % 2) * 90}>
                     <Link
@@ -277,11 +273,6 @@ function Home() {
                         {d.ofertas.length > 0 && (
                           <div className="text-sm text-muted-foreground">
                             {d.ofertas.map((o) => o.tipo).join(" · ")}
-                          </div>
-                        )}
-                        {detalle && (
-                          <div className="flex gap-2 text-[11px] text-muted-foreground flex-wrap pt-1">
-                            <span>{detalle}</span>
                           </div>
                         )}
                         <div className="pt-3"><BtnPH label="Ver desarrollo" variant="outline" size="sm" /></div>

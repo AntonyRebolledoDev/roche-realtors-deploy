@@ -265,7 +265,7 @@ export function PropertyCard({
   operacion = "Venta",
   imagen,
   zona = "Zona / Colonia",
-  detalle = "3 rec · 2 baños · 200 m²",
+  detalle = ["3 recámaras", "2 baños", "200 m²"],
   precio = "$00,000,000 MXN",
 }: {
   title?: string;
@@ -273,7 +273,7 @@ export function PropertyCard({
    operacion?: string;
   imagen?: string;
   zona?: string;
-  detalle?: string;
+  detalle?: string[];
   precio?: string;
 }) {
   return (
@@ -305,7 +305,13 @@ export function PropertyCard({
         <div className="text-lg font-semibold text-foreground tracking-tight">{title}</div>
         <div className="text-[11px] uppercase tracking-[0.22em] text-gold-soft">{tipo}</div>
         <div className="text-sm text-muted-foreground">{zona}</div>
-        <div className="text-[11px] text-muted-foreground">{detalle}</div>
+        {detalle.length > 0 && (
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-foreground">
+            {detalle.map((d) => (
+              <span key={d}>{d}</span>
+            ))}
+          </div>
+        )}
         <div className="text-xl font-semibold pt-1 tracking-tight">{precio}</div>
         <div className="pt-2 mt-auto">
           <BtnPH label="Ver propiedad" variant="outline" size="sm" />
